@@ -229,6 +229,9 @@
       "bestRankPoint": 1506.7578
     },
     "relationships": {
+      "matchesSquadFPP": {
+        "data": []
+      },
       "season": {
         "data": {
           "type": "season",
@@ -408,9 +411,6 @@
         ]
       },
       "matchesSquad": {
-        "data": []
-      },
-      "matchesSquadFPP": {
         "data": []
       }
     }
