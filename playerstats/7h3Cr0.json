@@ -2,7 +2,6 @@
   "data": {
     "type": "playerSeason",
     "attributes": {
-      "bestRankPoint": 1506.7578,
       "gameModeStats": {
         "duo": {
           "assists": 0,
@@ -226,12 +225,10 @@
           "winPoints": 0,
           "wins": 2
         }
-      }
+      },
+      "bestRankPoint": 1506.7578
     },
     "relationships": {
-      "matchesDuo": {
-        "data": []
-      },
       "matchesDuoFPP": {
         "data": [
           {
@@ -412,6 +409,9 @@
             "id": "a108a369-4743-4aad-bb39-e52179cdb1b5"
           }
         ]
+      },
+      "matchesDuo": {
+        "data": []
       }
     }
   },

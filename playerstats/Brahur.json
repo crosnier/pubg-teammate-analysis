@@ -229,6 +229,27 @@
       "bestRankPoint": 3263.0554
     },
     "relationships": {
+      "matchesSquadFPP": {
+        "data": []
+      },
+      "season": {
+        "data": {
+          "type": "season",
+          "id": "lifetime"
+        }
+      },
+      "player": {
+        "data": {
+          "type": "player",
+          "id": "account.294deafbc4ad48b99bd3f68d4b2dad11"
+        }
+      },
+      "matchesSolo": {
+        "data": []
+      },
+      "matchesSoloFPP": {
+        "data": []
+      },
       "matchesDuo": {
         "data": []
       },
@@ -419,27 +440,6 @@
             "id": "01c9b6d5-9fce-43e4-9214-24b1fb7483e9"
           }
         ]
-      },
-      "matchesSquadFPP": {
-        "data": []
-      },
-      "season": {
-        "data": {
-          "type": "season",
-          "id": "lifetime"
-        }
-      },
-      "player": {
-        "data": {
-          "type": "player",
-          "id": "account.294deafbc4ad48b99bd3f68d4b2dad11"
-        }
-      },
-      "matchesSolo": {
-        "data": []
-      },
-      "matchesSoloFPP": {
-        "data": []
       }
     }
   },

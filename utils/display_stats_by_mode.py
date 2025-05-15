@@ -55,10 +55,16 @@ STAT_GROUPS = {
 
 LABEL_WIDTH = 25  # updated for consistent alignment
 
-def print_static_banner():
-    print("╔════════════════════════╗")
-    print("║      Player Stats      ║")
-    print("╚════════════════════════╝\n")
+
+def print_static_banner(playername=None):
+    box_width = 45
+    title = f"{playername} Stats" if playername else "Player Stats"
+    padding = (box_width - len(title)) // 2
+    padded_title = f"{' ' * padding}{title}{' ' * (box_width - len(title) - padding)}"
+
+    print("╔" + "═" * box_width + "╗")
+    print(f"║{padded_title}║")
+    print("╚" + "═" * box_width + "╝\n")
 
 
 def format_number(val, key=None):
@@ -75,10 +81,10 @@ def load_player_stats(filepath):
         return json.load(f)
 
 
-def render_ascii_table(stats):
+def render_ascii_table(stats, playername):
     mode_stats = stats["data"]["attributes"]["gameModeStats"]
 
-    print_static_banner()
+    print_static_banner(playername)
 
     for group_name, fields in STAT_GROUPS.items():
         print("=" * 25)
@@ -108,6 +114,6 @@ if __name__ == "__main__":
     path = os.path.join("playerstats", f"{args.playername}.json")
     if os.path.exists(path):
         stats = load_player_stats(path)
-        render_ascii_table(stats)
+        render_ascii_table(stats, args.playername)
     else:
         print(f"[ERROR] Stats not found for '{args.playername}'. Run data query first.")
