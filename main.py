@@ -5,6 +5,9 @@ from api.player_stats import fetch_player_stats
 from utils.io_helpers import save_json
 from utils.display_stats_by_mode import render_ascii_table, load_player_stats
 from utils.display_match_history import display_match_history
+from api.telemetry_fetcher import fetch_telemetry_for_matches
+import asyncio
+
 
 import argparse
 
@@ -27,6 +30,18 @@ def main():
         # Display match history grouped by mode
         print("\n\n")
         display_match_history(args.playername)
+
+        # Fetch telemetry for all matches
+        match_ids = []
+        relationships = data["data"]["relationships"]
+        for key in relationships:
+            if key.startswith("matches"):
+                match_ids.extend([entry["id"] for entry in relationships[key].get("data", [])])
+
+        print()
+        print()
+        print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
+        asyncio.run(fetch_telemetry_for_matches(match_ids))
         
     except Exception as e:
         print(f"[ERROR] {e}")

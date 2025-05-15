@@ -229,6 +229,52 @@
       "bestRankPoint": 1506.7578
     },
     "relationships": {
+      "season": {
+        "data": {
+          "type": "season",
+          "id": "lifetime"
+        }
+      },
+      "player": {
+        "data": {
+          "type": "player",
+          "id": "account.4d62f321d9e7461a8cd7a29006d31ce2"
+        }
+      },
+      "matchesSolo": {
+        "data": []
+      },
+      "matchesSoloFPP": {
+        "data": [
+          {
+            "type": "match",
+            "id": "921c2ded-24cf-4ea1-b6cb-c8da722f3dd7"
+          },
+          {
+            "type": "match",
+            "id": "9f92cbd0-8cbb-4a7f-a471-9c77e42aa08b"
+          },
+          {
+            "type": "match",
+            "id": "6d201eaa-b3d3-4c4b-82be-3f483f98c705"
+          },
+          {
+            "type": "match",
+            "id": "4003af73-a00f-4d12-87cc-acc2a524230e"
+          },
+          {
+            "type": "match",
+            "id": "4c5a546c-9e0c-4f50-a6b1-e06015cadc4e"
+          },
+          {
+            "type": "match",
+            "id": "a108a369-4743-4aad-bb39-e52179cdb1b5"
+          }
+        ]
+      },
+      "matchesDuo": {
+        "data": []
+      },
       "matchesDuoFPP": {
         "data": [
           {
@@ -365,52 +411,6 @@
         "data": []
       },
       "matchesSquadFPP": {
-        "data": []
-      },
-      "season": {
-        "data": {
-          "type": "season",
-          "id": "lifetime"
-        }
-      },
-      "player": {
-        "data": {
-          "type": "player",
-          "id": "account.4d62f321d9e7461a8cd7a29006d31ce2"
-        }
-      },
-      "matchesSolo": {
-        "data": []
-      },
-      "matchesSoloFPP": {
-        "data": [
-          {
-            "type": "match",
-            "id": "921c2ded-24cf-4ea1-b6cb-c8da722f3dd7"
-          },
-          {
-            "type": "match",
-            "id": "9f92cbd0-8cbb-4a7f-a471-9c77e42aa08b"
-          },
-          {
-            "type": "match",
-            "id": "6d201eaa-b3d3-4c4b-82be-3f483f98c705"
-          },
-          {
-            "type": "match",
-            "id": "4003af73-a00f-4d12-87cc-acc2a524230e"
-          },
-          {
-            "type": "match",
-            "id": "4c5a546c-9e0c-4f50-a6b1-e06015cadc4e"
-          },
-          {
-            "type": "match",
-            "id": "a108a369-4743-4aad-bb39-e52179cdb1b5"
-          }
-        ]
-      },
-      "matchesDuo": {
         "data": []
       }
     }

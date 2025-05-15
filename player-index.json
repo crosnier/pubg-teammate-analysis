@@ -8,5 +8,15 @@
     "playername": "Brahur",
     "last_seen": "2025-05-15",
     "stats_file": "playerstats/brahur.json"
+  },
+  "account.74c87c9ee413407894c9ec17063ea023": {
+    "playername": "DanucD",
+    "last_seen": "2025-05-15",
+    "stats_file": "playerstats/danucd.json"
+  },
+  "account.28566b04d48b4724a713a73a1f59b598": {
+    "playername": "vsnz",
+    "last_seen": "2025-05-15",
+    "stats_file": "playerstats/vsnz.json"
   }
 }
