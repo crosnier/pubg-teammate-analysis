@@ -1,6 +1,6 @@
 # PUBG Teammate Analysis
 
-*Analyze and visualize stats of your PlayerUnknown's battlegrounds (PUBG) teammate(s) to make smarter squad decisions.*
+*Analyze and visualize stats of your PlayerUnknown's Battlegrounds (PUBG) teammate(s) to make smarter squad decisions.*
 
 As I join a round I like to know who I'm playing with. This project leverages the PUBG APIs to parse and analyze teammate performance, match history, and player statistics. It's designed to help players make informed decisions about who they team up with (or not).
 
