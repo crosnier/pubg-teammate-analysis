@@ -1,6 +1,8 @@
 # Project Files
 ./playerstats/*
 ./match-telemetry/*
+./matches/*
+
 
 # macOS system files
 .DS_Store
