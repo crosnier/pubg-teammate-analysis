@@ -8,56 +8,50 @@ As I join a round I like to know who I'm playing with. This project leverages th
 
 ## 🚀 Getting Started
 
-Clone the repo and install dependencies in a virtual environment:
+1. Clone the repo and set up a virtual environment:
 
 ```bash
 git clone https://github.com/crosnier/pubg-teammate-analysis.git
 cd pubg-teammate-analysis
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
 ```
 
-Set up a `.env` file with your PUBG API key:
+2. Install required packages from `requirements.txt`:
+
+```bash
+pip install -r requirements.txt  # includes requests, python-dotenv, aiohttp
+```
+
+3. Set up a `.env` file with your PUBG API key:
 
 ```
 PUBG_API_KEY=your_api_key_here
 ```
 
-Run the CLI with a player name:
+4. Run the CLI with a player name:
 
 ```bash
 python main.py PlayerName
 ```
 
-This will fetch the player's stats, display a summary table in the console, and save data locally for additional analysis.
-
 ---
 
 ## 🧭 System Flow
 
-1. **Entry Point:** `main.py`  
-   CLI parses input and loads `player-index.json`
+Just run `main.py` with a player name and let the automation do the rest.
 
-2. **Player Stats Fetch:**  
-   Fetches stats and saves to `./playerstats/{player}.json` via PUBG API  
-   *(see `utils/io_helpers.py`)*
-
-3. **Match History Display:**  
-   Retrieves recent match IDs from `playerstats` and shows them  
-   *(see `utils/display_match_history.py`)*
-
-4. **Telemetry Fetch:**  
-   Attempts to pull match telemetry (if implemented)  
-   *(not rate-limited by PUBG)*
-
-5. **Bot Detection (WIP):**  
-   Parses telemetry to flag suspected bot-heavy matches  
-   *(prototype inside `main.py`)*
-
-6. **Stat Display:**  
-   Aggregates combat/survival/support/movement stats per game mode  
-   *(see `utils/display_stats_by_mode.py`)*
+```text
+main.py
+ ├──▶ Step 1: Load player name from CLI and reference player-index.json
+ ├──▶ Step 2: Fetch player stats via PUBG API
+ │       └── utils/io_helpers.py → stores to ./playerstats/
+ ├──▶ Step 3: Display match history
+ │       └── utils/display_match_history.py
+ ├──▶ Step 4: (Optional) Fetch match telemetry files
+ └──▶ Step 5: Display categorized stat tables by mode
+         └── utils/display_stats_by_mode.py
+```
 
 ---
 
@@ -82,16 +76,6 @@ This will fetch the player's stats, display a summary table in the console, and 
 
 ---
 
-## ✅ Dependencies
-
-```
-requests
-python-dotenv
-aiohttp
-```
-
----
-
 ## 🔧 Features (Built So Far)
 
 - ✅ Player Stats Query (lifetime stats by name)
@@ -107,8 +91,7 @@ aiohttp
 ## 🛠 Notes
 
 - Only telemetry files are required to analyze bot/player behavior.
-- Add/remove usernames from `player-index.json` to change targets.
-- Match IDs pulled from cached stats, not fresh API calls (avoids rate limits).
+- Match IDs pulled from cached stats, not fresh API calls (avoids rate limits). Match json doesn't change once generated.
 
 ---
 
