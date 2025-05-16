@@ -1,3 +1,7 @@
+# Project Files
+./playerstats/*
+./match-telemetry/*
+
 # macOS system files
 .DS_Store
 .AppleDouble
