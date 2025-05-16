@@ -52,15 +52,15 @@ This reveals which players thrive in endgame or solo-clutch situations.
 
 If you parse telemetry:
 	•	Bot Identification: Bots usually:
-	•	Have generic or odd usernames
-	•	Don’t perform knockdowns
-	•	Move inefficiently
-	•	Always miss grenades
-	•	You could flag them automatically and track your bot-to-human kill ratio
+		•	Have generic or odd usernames
+		•	Don’t perform knockdowns
+		•	Move inefficiently
+		•	Always miss grenades
+		•	You could flag them automatically and track your bot-to-human kill ratio
 	•	First 3-Min Stats:
-	•	Distance moved
-	•	Items picked up
-	•	Engagements started
+		•	Distance moved
+		•	Items picked up
+		•	Engagements started
 These help reveal early game tempo and drop effectiveness.
 
 ⸻
