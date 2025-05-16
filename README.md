@@ -8,6 +8,8 @@ Console output only for now, with plans to expand into a web app, streamline for
 
 This project started as a fun, educational experiment to improve my understanding of software development principles, Git and GitHub functionality, and associated workflows.
 
+➡️ This repo is actively evolving. Track feature progress on the [Project Board](https://github.com/crosnier/pubg-teammate-analysis/projects).
+
 ---
 
 ## 🚀 Getting Started
