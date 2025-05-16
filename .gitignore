@@ -1,7 +1,7 @@
 # Project Files
-./playerstats/*
-./match-telemetry/*
-./matches/*
+./playerstats/*.json
+./match-telemetry/*.json
+./matches/*.json
 
 
 # macOS system files
