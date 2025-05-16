@@ -75,7 +75,3 @@ Cross-reference teammates you’ve played with most:
 Could be visualized as:
 
 “You’re 40% more likely to survive Top 10 when teamed with JdogFPS”
-
-⸻
-
-Would you like me to generate a Python module or analysis notebook to compute and visualize these insights from your JSON data?
