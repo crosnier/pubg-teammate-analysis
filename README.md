@@ -4,6 +4,10 @@
 
 As I join a round I like to know who I'm playing with. This project leverages the PUBG APIs to parse and analyze teammate performance, match history, and player statistics. It's designed to help players make informed decisions about who they team up with (or not).
 
+Console output only for now, with plans to expand into a web app, streamline for decision-making, and eventually dockerize.
+
+This project started as a fun, educational experiment to improve my understanding of software development principles, Git and GitHub functionality, and associated workflows.
+
 ---
 
 ## 🚀 Getting Started
