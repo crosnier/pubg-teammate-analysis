@@ -30,10 +30,10 @@ Use this to compare your own support value vs. other teammates.
 ⸻
 
 🚗 Mobility Impact
-	•	Distance per Round = Total Walked/Driven ÷ Rounds
-Compare this to teammates to infer playstyle (sniper vs. looter vs. fragger)
+	- Distance per Round = Total Walked/Driven ÷ Rounds
+    	- Compare this to teammates to infer playstyle (sniper vs. looter vs. fragger)
 	•	Road Kill Ratio = Road Kills ÷ Driven Distance
-Rare metric — high numbers may indicate an unorthodox but effective player.
+		Rare metric — high numbers may indicate an unorthodox but effective player.
 
 ⸻
 
