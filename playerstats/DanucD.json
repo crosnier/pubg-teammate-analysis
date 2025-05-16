@@ -1,0 +1,655 @@
+{
+  "data": {
+    "type": "playerSeason",
+    "attributes": {
+      "gameModeStats": {
+        "duo": {
+          "assists": 81,
+          "boosts": 274,
+          "dBNOs": 249,
+          "dailyKills": 19,
+          "dailyWins": 1,
+          "damageDealt": 45686.133,
+          "days": 23,
+          "headshotKills": 120,
+          "heals": 272,
+          "killPoints": 0,
+          "kills": 404,
+          "longestKill": 445.7366,
+          "longestTimeSurvived": 1930,
+          "losses": 80,
+          "maxKillStreaks": 5,
+          "mostSurvivalTime": 1930,
+          "rankPoints": 0,
+          "rankPointsTitle": "",
+          "revives": 31,
+          "rideDistance": 142506.25,
+          "roadKills": 4,
+          "roundMostKills": 19,
+          "roundsPlayed": 85,
+          "suicides": 2,
+          "swimDistance": 0,
+          "teamKills": 3,
+          "timeSurvived": 53565.24,
+          "top10s": 23,
+          "vehicleDestroys": 2,
+          "walkDistance": 75926.086,
+          "weaponsAcquired": 400,
+          "weeklyKills": 19,
+          "weeklyWins": 1,
+          "winPoints": 0,
+          "wins": 5
+        },
+        "duo-fpp": {
+          "assists": 18513,
+          "boosts": 69347,
+          "dBNOs": 47291,
+          "dailyKills": 12,
+          "dailyWins": 0,
+          "damageDealt": 9505123,
+          "days": 1435,
+          "headshotKills": 21064,
+          "heals": 85219,
+          "killPoints": 0,
+          "kills": 80046,
+          "longestKill": 918.5075,
+          "longestTimeSurvived": 2036.061,
+          "losses": 17894,
+          "maxKillStreaks": 6,
+          "mostSurvivalTime": 2036.061,
+          "rankPoints": 0,
+          "rankPointsTitle": "",
+          "revives": 9877,
+          "rideDistance": 30033034,
+          "roadKills": 350,
+          "roundMostKills": 29,
+          "roundsPlayed": 19699,
+          "suicides": 184,
+          "swimDistance": 14984.45,
+          "teamKills": 123,
+          "timeSurvived": 12546210,
+          "top10s": 5038,
+          "vehicleDestroys": 613,
+          "walkDistance": 17317194,
+          "weaponsAcquired": 114750,
+          "weeklyKills": 12,
+          "weeklyWins": 0,
+          "winPoints": 0,
+          "wins": 2139
+        },
+        "solo": {
+          "assists": 2,
+          "boosts": 80,
+          "dBNOs": 0,
+          "dailyKills": 3,
+          "dailyWins": 0,
+          "damageDealt": 12493.88,
+          "days": 19,
+          "headshotKills": 26,
+          "heals": 51,
+          "killPoints": 0,
+          "kills": 109,
+          "longestKill": 218.54564,
+          "longestTimeSurvived": 1916,
+          "losses": 32,
+          "maxKillStreaks": 2,
+          "mostSurvivalTime": 1916,
+          "rankPoints": 0,
+          "rankPointsTitle": "",
+          "revives": 0,
+          "rideDistance": 50462.465,
+          "roadKills": 0,
+          "roundMostKills": 16,
+          "roundsPlayed": 36,
+          "suicides": 0,
+          "swimDistance": 66.107254,
+          "teamKills": 0,
+          "timeSurvived": 24184.5,
+          "top10s": 6,
+          "vehicleDestroys": 0,
+          "walkDistance": 32508.016,
+          "weaponsAcquired": 133,
+          "weeklyKills": 3,
+          "weeklyWins": 0,
+          "winPoints": 0,
+          "wins": 4
+        },
+        "solo-fpp": {
+          "assists": 663,
+          "boosts": 38678,
+          "dBNOs": 498,
+          "dailyKills": 54,
+          "dailyWins": 1,
+          "damageDealt": 5926813.5,
+          "days": 1460,
+          "headshotKills": 16120,
+          "heals": 39743,
+          "killPoints": 0,
+          "kills": 51548,
+          "longestKill": 668.5206,
+          "longestTimeSurvived": 2165.237,
+          "losses": 12236,
+          "maxKillStreaks": 5,
+          "mostSurvivalTime": 2165.237,
+          "rankPoints": 0,
+          "rankPointsTitle": "",
+          "revives": 63,
+          "rideDistance": 19704326,
+          "roadKills": 342,
+          "roundMostKills": 23,
+          "roundsPlayed": 13090,
+          "suicides": 88,
+          "swimDistance": 6074.881,
+          "teamKills": 24,
+          "timeSurvived": 7323542,
+          "top10s": 1947,
+          "vehicleDestroys": 231,
+          "walkDistance": 9789879,
+          "weaponsAcquired": 68791,
+          "weeklyKills": 54,
+          "weeklyWins": 1,
+          "winPoints": 0,
+          "wins": 901
+        },
+        "squad": {
+          "assists": 40,
+          "boosts": 208,
+          "dBNOs": 272,
+          "dailyKills": 41,
+          "dailyWins": 1,
+          "damageDealt": 36514.09,
+          "days": 30,
+          "headshotKills": 65,
+          "heals": 218,
+          "killPoints": 0,
+          "kills": 250,
+          "longestKill": 335.79507,
+          "longestTimeSurvived": 1940,
+          "losses": 98,
+          "maxKillStreaks": 4,
+          "mostSurvivalTime": 1940,
+          "rankPoints": 1500,
+          "rankPointsTitle": "",
+          "revives": 22,
+          "rideDistance": 85268.016,
+          "roadKills": 5,
+          "roundMostKills": 13,
+          "roundsPlayed": 100,
+          "suicides": 0,
+          "swimDistance": 13.981836,
+          "teamKills": 1,
+          "timeSurvived": 42576,
+          "top10s": 12,
+          "vehicleDestroys": 1,
+          "walkDistance": 34681.703,
+          "weaponsAcquired": 608,
+          "weeklyKills": 46,
+          "weeklyWins": 1,
+          "winPoints": 0,
+          "wins": 3
+        },
+        "squad-fpp": {
+          "assists": 5408,
+          "boosts": 20310,
+          "dBNOs": 20101,
+          "dailyKills": 7,
+          "dailyWins": 0,
+          "damageDealt": 3184829.8,
+          "days": 946,
+          "headshotKills": 5733,
+          "heals": 26035,
+          "killPoints": 0,
+          "kills": 24270,
+          "longestKill": 900.64026,
+          "longestTimeSurvived": 2100.562,
+          "losses": 6290,
+          "maxKillStreaks": 5,
+          "mostSurvivalTime": 2100.562,
+          "rankPoints": 0,
+          "rankPointsTitle": "",
+          "revives": 2978,
+          "rideDistance": 7630785,
+          "roadKills": 90,
+          "roundMostKills": 24,
+          "roundsPlayed": 6835,
+          "suicides": 82,
+          "swimDistance": 8396.446,
+          "teamKills": 71,
+          "timeSurvived": 4330605,
+          "top10s": 2042,
+          "vehicleDestroys": 139,
+          "walkDistance": 6580597.5,
+          "weaponsAcquired": 34600,
+          "weeklyKills": 107,
+          "weeklyWins": 7,
+          "winPoints": 0,
+          "wins": 637
+        }
+      },
+      "bestRankPoint": 3785.6648
+    },
+    "relationships": {
+      "matchesSquadFPP": {
+        "data": [
+          {
+            "type": "match",
+            "id": "27c0ef2a-116a-451c-8907-42cbe75858a9"
+          },
+          {
+            "type": "match",
+            "id": "217cada8-a9ea-4569-8a82-7b98991c1135"
+          },
+          {
+            "type": "match",
+            "id": "6ffd1ca7-78f9-4127-ba6c-d880615a11bd"
+          },
+          {
+            "type": "match",
+            "id": "2117b8e6-01ec-470e-8b57-487b73dbddb3"
+          },
+          {
+            "type": "match",
+            "id": "c25740ac-6e80-43bc-b044-6a1c66485a8a"
+          },
+          {
+            "type": "match",
+            "id": "24339006-72bc-4036-88f5-e6343017ac54"
+          },
+          {
+            "type": "match",
+            "id": "a121b722-5426-49d3-9b31-2bf3ee372ab6"
+          },
+          {
+            "type": "match",
+            "id": "b5883225-e661-42bc-9863-7bc52f3350b5"
+          },
+          {
+            "type": "match",
+            "id": "eefe30d5-1b81-4ffe-a036-82ab345ed8ac"
+          },
+          {
+            "type": "match",
+            "id": "157e0d18-f0de-4066-85f9-b6db6fefefde"
+          },
+          {
+            "type": "match",
+            "id": "0932d962-0faa-4d13-bc66-2e1816b12397"
+          },
+          {
+            "type": "match",
+            "id": "989da2c9-9957-446f-92de-8038a64d519d"
+          },
+          {
+            "type": "match",
+            "id": "c39cf33c-8cc6-4cec-ab5d-f9742d3750bb"
+          },
+          {
+            "type": "match",
+            "id": "2753f8fe-0f07-4b00-9ceb-9a8ce228bbd1"
+          },
+          {
+            "type": "match",
+            "id": "f0680bd9-2b83-4310-afed-9ca103948547"
+          },
+          {
+            "type": "match",
+            "id": "c7d58f99-7402-41b0-a2e9-ac3d14f6ed3b"
+          },
+          {
+            "type": "match",
+            "id": "18b10e80-1e32-4467-8305-c65773f3e266"
+          },
+          {
+            "type": "match",
+            "id": "2867b3e3-7042-4b6a-9842-5cbb47ce475e"
+          },
+          {
+            "type": "match",
+            "id": "68cb8334-43d2-44c2-b8dd-f7ba6d6b0bff"
+          },
+          {
+            "type": "match",
+            "id": "4f846e34-6960-4601-869f-e5de18501145"
+          },
+          {
+            "type": "match",
+            "id": "25e1aeda-d496-44a2-944e-f8c6ce9accdf"
+          },
+          {
+            "type": "match",
+            "id": "c62fe03a-2779-4fc7-b6a4-8cfa48e90237"
+          },
+          {
+            "type": "match",
+            "id": "b3b8dfed-9fd0-4b6e-8ef6-9fb2c69205ea"
+          },
+          {
+            "type": "match",
+            "id": "f3eee5c6-58c2-4dab-a373-2269e18fbde4"
+          },
+          {
+            "type": "match",
+            "id": "abfaabe2-a221-4494-8cc7-b34252245a2e"
+          },
+          {
+            "type": "match",
+            "id": "94497f2d-a625-4e7c-8660-6e505505e12e"
+          },
+          {
+            "type": "match",
+            "id": "3a8af7e6-9a0c-4b28-8f6e-65ea0f423863"
+          },
+          {
+            "type": "match",
+            "id": "55b8d964-c6b0-440f-841c-852c0ee9a306"
+          },
+          {
+            "type": "match",
+            "id": "6ae0f8ad-9687-4cdb-a924-cdf6109d0d3d"
+          },
+          {
+            "type": "match",
+            "id": "ad5f4757-bb98-413d-b41b-5eba2e6511d5"
+          },
+          {
+            "type": "match",
+            "id": "480b53d5-d5f4-4816-884a-8a57c6a262a6"
+          },
+          {
+            "type": "match",
+            "id": "1921b6aa-6342-4ede-a2c1-fcbae22c9696"
+          }
+        ]
+      },
+      "season": {
+        "data": {
+          "type": "season",
+          "id": "lifetime"
+        }
+      },
+      "player": {
+        "data": {
+          "type": "player",
+          "id": "account.74c87c9ee413407894c9ec17063ea023"
+        }
+      },
+      "matchesSolo": {
+        "data": []
+      },
+      "matchesSoloFPP": {
+        "data": [
+          {
+            "type": "match",
+            "id": "d575aa3e-b627-45b9-9879-3d6a789026ad"
+          },
+          {
+            "type": "match",
+            "id": "01381014-b404-4fbb-9979-56a1fb38a7cc"
+          },
+          {
+            "type": "match",
+            "id": "6738a645-cb57-4ada-8670-0b3709d5dc8d"
+          },
+          {
+            "type": "match",
+            "id": "7e8e0d19-cc82-4ab3-bcdb-3be9d9f3ad6e"
+          },
+          {
+            "type": "match",
+            "id": "66064397-341f-49c9-a828-a3f19299411f"
+          },
+          {
+            "type": "match",
+            "id": "cbd1bb35-5664-4604-8954-e4e6ee14551d"
+          },
+          {
+            "type": "match",
+            "id": "73ca1748-8426-4a8d-ae78-9a0aca839f72"
+          },
+          {
+            "type": "match",
+            "id": "69536c62-3712-43f9-9200-5dc6890a1131"
+          },
+          {
+            "type": "match",
+            "id": "3eaa7d48-4cb1-4e0f-948d-413b2c9bc6e2"
+          },
+          {
+            "type": "match",
+            "id": "2d103083-a4a7-4265-afbd-0b52b185e346"
+          },
+          {
+            "type": "match",
+            "id": "04d0faa4-6b36-430c-9605-69260aa9e6c2"
+          },
+          {
+            "type": "match",
+            "id": "26aab18e-228c-4c93-8f33-db6c819da59d"
+          },
+          {
+            "type": "match",
+            "id": "371bdf3e-8dd7-40e1-bf2b-8cb47f9c8725"
+          },
+          {
+            "type": "match",
+            "id": "407840f9-7a21-4651-82ae-fe846e453d8a"
+          },
+          {
+            "type": "match",
+            "id": "34a74de3-2a63-433f-9f6a-f87a1e12aa85"
+          },
+          {
+            "type": "match",
+            "id": "0cb4a64a-55f1-4c9e-a898-70c279b015c7"
+          },
+          {
+            "type": "match",
+            "id": "b778c351-6253-4cd9-ab12-c5b41791137a"
+          },
+          {
+            "type": "match",
+            "id": "9faaa093-74c8-40fa-b811-6b68d2be100e"
+          },
+          {
+            "type": "match",
+            "id": "52078b23-424d-4f06-86b4-99dcd2c91c06"
+          },
+          {
+            "type": "match",
+            "id": "b836c02e-49d1-4a3b-8546-d6c8c388e1c3"
+          },
+          {
+            "type": "match",
+            "id": "42282af7-f8fc-4690-859a-22499c32c0cd"
+          },
+          {
+            "type": "match",
+            "id": "cd02861d-4191-413c-9204-24566f651d50"
+          },
+          {
+            "type": "match",
+            "id": "2ed05415-ae9d-4072-9fe3-b400951f00f3"
+          },
+          {
+            "type": "match",
+            "id": "2a701430-a6a6-47b5-a451-e19dcc21825a"
+          },
+          {
+            "type": "match",
+            "id": "de0a1dca-0ed7-4fae-a2db-c836bf578aa3"
+          },
+          {
+            "type": "match",
+            "id": "b4947e05-9bca-43b9-ace2-fbbc5ece2763"
+          },
+          {
+            "type": "match",
+            "id": "9bc3e166-4f92-4a69-bd1e-c9b65361ac7a"
+          },
+          {
+            "type": "match",
+            "id": "b0469f40-fa90-4151-aa69-1e476ffaf0f9"
+          },
+          {
+            "type": "match",
+            "id": "0fca0b9d-c500-480a-8ea2-a87ea5fd1c11"
+          },
+          {
+            "type": "match",
+            "id": "9962b736-7c2b-47c8-b60c-c51ce5e69738"
+          },
+          {
+            "type": "match",
+            "id": "c4f67bbf-336c-46bd-8d5b-94ca7d2fd732"
+          },
+          {
+            "type": "match",
+            "id": "5e253ff1-1c9d-4818-9835-ed376d95b8de"
+          }
+        ]
+      },
+      "matchesDuo": {
+        "data": []
+      },
+      "matchesDuoFPP": {
+        "data": [
+          {
+            "type": "match",
+            "id": "6de4decf-c2f2-43a0-9e74-f060188b1edb"
+          },
+          {
+            "type": "match",
+            "id": "665aba55-2573-4cad-8290-427815d0e7f4"
+          },
+          {
+            "type": "match",
+            "id": "f68ffb05-ff11-4869-8eb7-e67d05cc82f4"
+          },
+          {
+            "type": "match",
+            "id": "305b4d64-e8c5-4fd5-b16c-4b436aa277e4"
+          },
+          {
+            "type": "match",
+            "id": "efe358ec-df2b-414d-b8e6-5f56b914f52a"
+          },
+          {
+            "type": "match",
+            "id": "65759780-4cf6-4644-b605-fc42f13d560a"
+          },
+          {
+            "type": "match",
+            "id": "80f7eaa4-9a5b-497f-b5ab-04b07a351046"
+          },
+          {
+            "type": "match",
+            "id": "68a18cc6-496f-444b-adcb-e0e1057034c6"
+          },
+          {
+            "type": "match",
+            "id": "351fc51c-9567-414e-8fdd-187238533494"
+          },
+          {
+            "type": "match",
+            "id": "49548aa5-d5a6-427e-a83d-035a9d065695"
+          },
+          {
+            "type": "match",
+            "id": "afd0ba8f-a2b1-4b53-9421-b6d1fa7768f1"
+          },
+          {
+            "type": "match",
+            "id": "dc65c0ec-ba87-48df-9f8b-8eebc30877c9"
+          },
+          {
+            "type": "match",
+            "id": "24a39e89-e998-496b-8fb1-0a8a34a51d44"
+          },
+          {
+            "type": "match",
+            "id": "6d1eccbf-2b25-4703-9fe5-17382823adb8"
+          },
+          {
+            "type": "match",
+            "id": "63dac5f9-5bc6-4e75-8a27-1931ba27667f"
+          },
+          {
+            "type": "match",
+            "id": "d6230de5-95ba-4ddc-99ac-513b930767e4"
+          },
+          {
+            "type": "match",
+            "id": "f64cefea-80b2-40b1-83ca-9011a43c56e8"
+          },
+          {
+            "type": "match",
+            "id": "5e28f3a0-9bec-485b-a878-7d608a983d76"
+          },
+          {
+            "type": "match",
+            "id": "7b452c46-71e2-4762-9deb-e699476a6694"
+          },
+          {
+            "type": "match",
+            "id": "f7a60987-85bd-4d4f-9a18-678dcb481325"
+          },
+          {
+            "type": "match",
+            "id": "e44ef65a-feb1-4dd8-80f9-c7a6c68a76c2"
+          },
+          {
+            "type": "match",
+            "id": "9d3e6619-c9ab-42e2-b318-ce9e53693d3b"
+          },
+          {
+            "type": "match",
+            "id": "7b6211b2-cf9d-4bca-b73a-c144bd2c16d4"
+          },
+          {
+            "type": "match",
+            "id": "61a80aad-8c6e-4119-8b61-a7eac489eb40"
+          },
+          {
+            "type": "match",
+            "id": "528050fd-6728-42e2-8e88-7a3f07df621e"
+          },
+          {
+            "type": "match",
+            "id": "c55b0cba-9062-4409-b862-33ac15a698a3"
+          },
+          {
+            "type": "match",
+            "id": "991b51a5-30ea-4fab-87dc-2b1794938afd"
+          },
+          {
+            "type": "match",
+            "id": "1ed988c0-5b80-4456-8c12-8422763409a1"
+          },
+          {
+            "type": "match",
+            "id": "27249ffe-93ac-4cbc-98b6-7d57fbe03069"
+          },
+          {
+            "type": "match",
+            "id": "4dd79c66-0945-430b-9792-769f7bbcb7ee"
+          },
+          {
+            "type": "match",
+            "id": "87f8ea36-4dad-40ac-b94f-0c69ac6ec305"
+          },
+          {
+            "type": "match",
+            "id": "bf64ec4f-d40c-4414-a0aa-0fe04d089b9e"
+          }
+        ]
+      },
+      "matchesSquad": {
+        "data": []
+      }
+    }
+  },
+  "links": {
+    "self": "https://api.pubg.com/shards/steam/players/account.74c87c9ee413407894c9ec17063ea023/seasons/lifetime"
+  },
+  "meta": {}
+}
