@@ -95,13 +95,6 @@ main.py
 
 ---
 
-## 📬 Contact
-
-Built by Crosnier  
-Feel free to open an issue with bugs or ideas!
-
----
-
 ## 📸 Sample Console Output
 
 ```text
