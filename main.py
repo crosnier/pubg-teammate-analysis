@@ -40,7 +40,7 @@ def main():
 
         print()
         print()
-        print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
+        #print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
         #asyncio.run(fetch_telemetry_for_matches(match_ids)) # Temporarily Disabled until Rate Limiting Deployed - IP Ban Risk!!! crap.
         
     except Exception as e:
