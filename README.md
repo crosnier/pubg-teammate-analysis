@@ -77,7 +77,7 @@ main.py
 
 - Only telemetry files are required to analyze bot/player behavior.
 - Match IDs come from cached stats, not fresh API calls, to avoid rate
-  limits — match JSON doesn't change once a match is generated.
+  limits - match JSON doesn't change once a match is generated.
 
 ## Sample Output
 
@@ -89,6 +89,6 @@ PUBG Teammate Analysis
 Copyright (C) 2026 crosnier
 
 Licensed under the [GNU Affero General Public License v3.0](LICENSE). You're
-free to use, fork, and modify this project — including running a modified
-version as a network service — as long as your source stays available under
+free to use, fork, and modify this project - including running a modified
+version as a network service - as long as your source stays available under
 the same license.

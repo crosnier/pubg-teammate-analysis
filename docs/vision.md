@@ -6,7 +6,7 @@ Squads in PUBG load in on the plane. From that point until
 the match ends, you're playing with strangers whose habits, skill level, and
 tendencies you know nothing about. There's a short window, while flying to
 the island, where the roster is effectively final but the round hasn't
-started yet — that's the moment this tool is built around.
+started yet - that's the moment this tool is built around.
 
 ## North star
 
@@ -18,7 +18,7 @@ While a match is loading and the squad is on the plane:
 4. Build a short profile per teammate: playstyle indicators (drop zones,
    weapon preferences, aggression vs. survival tendencies), summary of their
    last match, and any notable patterns or standout events from recent
-   history — this is a starting list, not a ceiling. As telemetry gets mined
+   history - this is a starting list, not a ceiling. As telemetry gets mined
    more deeply, the profile should grow to include whatever signal turns out
    to be genuinely worth surfacing.
 5. Surface those profiles before the plane reaches the drop zone.
@@ -29,12 +29,12 @@ data. That's not a blocker: every profile is built from each teammate's most
 recent *completed* matches, which naturally includes last round if you were
 already playing with them.
 
-Own-name exclusion above is specific to the auto-detection step — it's a
+Own-name exclusion above is specific to the auto-detection step - it's a
 teammate scanner, not a mirror. Seeing my own profile, built the exact same
 way as everyone else's, is a separate and genuinely useful capability: it's
 the only way to know what my own persona looks like from the outside.
 
-The goal isn't just stat-checking — it's understanding the profile of each
+The goal isn't just stat-checking - it's understanding the profile of each
 player in your squad well enough to predict their behavior and playstyle
 patterns, adapt your own play to theirs, and have something real to talk
 about. A good profile should make it easy to strike up a conversation with a
@@ -45,21 +45,21 @@ teammate, not just judge their K/D.
 The current CLI is the foundation, not the end state. Rough phases, in
 order:
 
-1. **Stats & telemetry foundation** (current) — query, cache, and display
+1. **Stats & telemetry foundation** (current) - query, cache, and display
    player stats and match history from the CLI.
-2. **Match-level insight** — mine telemetry for behavioral signal (drop
+2. **Match-level insight** - mine telemetry for behavioral signal (drop
    zones, weapon usage, engagement patterns, bot detection, and more) instead
    of just raw stat totals. The specific signals worth extracting are still
-   an open question — expect this list to mature as prototyping against real
+   an open question - expect this list to mature as prototyping against real
    telemetry surfaces better, more "wow factor" storyboards.
-3. **Automatic squad detection** — recognize when a new round has loaded and
+3. **Automatic squad detection** - recognize when a new round has loaded and
    identify teammates from on-screen player names, without manual input.
-4. **Delivery surface** — move profile output from console text to a web
+4. **Delivery surface** - move profile output from console text to a web
    app, so profiles render as an actual UI instead of ASCII tables. Docker
    packaging follows once the app has a stable shape.
 
 Live status and sequencing for all of this lives on the
-[Project board](https://github.com/users/crosnier/projects/2) — this doc
+[Project board](https://github.com/users/crosnier/projects/2) - this doc
 explains the *why*, the board tracks the *what's next*.
 
 ## Explicitly out of scope for now
