@@ -60,3 +60,11 @@ __pycache__/
 *.pem
 *.key
 *.crt
+
+# Local AI-assistant config/notes (never pushed)
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+
+# Private project notes -- local-only, never pushed
+private/

@@ -171,4 +171,4 @@ PlayerName_5   : 1
 
 ## **Samples for Inspiration**  
 
-![stats sample 1](image.png)
+![stats sample 1](../../images/pubg-player-stats-sample.png)
