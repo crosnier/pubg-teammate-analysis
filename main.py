@@ -2,6 +2,7 @@
 # main CLI entry point
 # ==============================
 from api.player_stats import fetch_player_stats
+from api.rate_limiter import player_api_queue
 from utils.io_helpers import save_json
 from utils.display_stats_by_mode import render_ascii_table, load_player_stats
 from utils.display_match_history import display_match_history
@@ -11,38 +12,46 @@ import asyncio
 
 import argparse
 
+async def run(playername):
+    try:
+        await _run(playername)
+    finally:
+        await player_api_queue.close()
+
+async def _run(playername):
+    data, player_id = await fetch_player_stats(playername)
+    save_json(data, f"playerstats/{playername}.json")
+    print(f"[SUCCESS] Stats saved for '{playername}' (account ID: {player_id})")
+    print()
+    print()
+
+    # Display stats as ASCII table
+    stats = load_player_stats(f"playerstats/{playername}.json")
+    render_ascii_table(stats, playername)
+
+    # Display match history grouped by mode
+    print("\n\n")
+    display_match_history(playername)
+
+    # Fetch telemetry for all matches
+    match_ids = []
+    relationships = data["data"]["relationships"]
+    for key in relationships:
+        if key.startswith("matches"):
+            match_ids.extend([entry["id"] for entry in relationships[key].get("data", [])])
+
+    print()
+    print()
+    #print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
+    #await fetch_telemetry_for_matches(match_ids) # Temporarily Disabled until Rate Limiting Deployed - IP Ban Risk!!! crap.
+
 def main():
     parser = argparse.ArgumentParser(description="Query and save PUBG lifetime player stats.")
     parser.add_argument("playername", help="The PUBG player name to query")
     args = parser.parse_args()
 
     try:
-        data, player_id = fetch_player_stats(args.playername)
-        save_json(data, f"playerstats/{args.playername}.json")
-        print(f"[SUCCESS] Stats saved for '{args.playername}' (account ID: {player_id})")
-        print()
-        print()
-        
-        # Display stats as ASCII table
-        stats = load_player_stats(f"playerstats/{args.playername}.json")
-        render_ascii_table(stats, args.playername)
-
-        # Display match history grouped by mode
-        print("\n\n")
-        display_match_history(args.playername)
-
-        # Fetch telemetry for all matches
-        match_ids = []
-        relationships = data["data"]["relationships"]
-        for key in relationships:
-            if key.startswith("matches"):
-                match_ids.extend([entry["id"] for entry in relationships[key].get("data", [])])
-
-        print()
-        print()
-        #print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
-        #asyncio.run(fetch_telemetry_for_matches(match_ids)) # Temporarily Disabled until Rate Limiting Deployed - IP Ban Risk!!! crap.
-        
+        asyncio.run(run(args.playername))
     except Exception as e:
         print(f"[ERROR] {e}")
 
