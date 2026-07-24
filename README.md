@@ -88,6 +88,20 @@ main.py
   until headers are seen. `/matches` and telemetry URLs are not
   rate-limited and bypass the queue.
 
+## Testing
+
+See [tests/README.md](tests/README.md) for the testing standard (unit vs.
+integration vs. live smoke test). Run the automated suite with:
+
+```bash
+python -m unittest discover tests
+```
+
+Any PR touching API-facing behavior (`api/` or code that changes what's
+sent to or parsed from a live response) also expects one manual smoke-test
+run (`python main.py <player>`) against the real API before merging - that
+step isn't part of the automated suite.
+
 ## Sample Output
 
 See [docs/sample-output.md](docs/sample-output.md) for a full example run.
