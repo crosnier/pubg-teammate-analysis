@@ -9,6 +9,9 @@ from utils.display_match_history import display_match_history
 from api.telemetry_fetcher import fetch_telemetry_for_matches
 from utils.combat_stats import compute_combat_stats
 from utils.display_combat_stats import render_combat_stats
+from utils.bot_detection import find_latest_match, detect_bots
+from utils.display_bot_stats import render_bot_summary
+from api.bot_index import update_bot_index
 import asyncio
 
 
@@ -51,6 +54,14 @@ async def _run(playername):
     print("\n\n")
     combat_stats = compute_combat_stats(player_id)
     render_combat_stats(combat_stats)
+
+    # Detect bots in the most recently played match and record them
+    print("\n\n")
+    latest_match_id, latest_events = find_latest_match()
+    if latest_match_id:
+        bots = detect_bots(latest_events)
+        update_bot_index(bots, latest_match_id)
+        render_bot_summary(latest_match_id, bots)
 
 def main():
     parser = argparse.ArgumentParser(description="Query and save PUBG lifetime player stats.")
