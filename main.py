@@ -7,6 +7,8 @@ from utils.io_helpers import save_json
 from utils.display_stats_by_mode import render_ascii_table, load_player_stats
 from utils.display_match_history import display_match_history
 from api.telemetry_fetcher import fetch_telemetry_for_matches
+from utils.combat_stats import compute_combat_stats
+from utils.display_combat_stats import render_combat_stats
 import asyncio
 
 
@@ -42,8 +44,13 @@ async def _run(playername):
 
     print()
     print()
-    #print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
-    #await fetch_telemetry_for_matches(match_ids) # Temporarily Disabled until Rate Limiting Deployed - IP Ban Risk!!! crap.
+    print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
+    await fetch_telemetry_for_matches(match_ids)
+
+    # Display combat stats mined from cached telemetry
+    print("\n\n")
+    combat_stats = compute_combat_stats(player_id)
+    render_combat_stats(combat_stats)
 
 def main():
     parser = argparse.ArgumentParser(description="Query and save PUBG lifetime player stats.")

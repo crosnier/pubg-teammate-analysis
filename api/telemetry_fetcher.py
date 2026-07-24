@@ -66,12 +66,29 @@ async def fetch_and_save_telemetry(session, match_id, semaphore):
         return ("failed", match_id)
 
 
-async def fetch_telemetry_for_matches(match_ids, concurrency=None):
+def _is_cached(match_id):
+    return os.path.exists(os.path.join(TELEMETRY_DIR, f"{match_id}-telemetry.json"))
+
+
+async def fetch_telemetry_for_matches(match_ids, concurrency=None, max_new_per_run=None):
     if concurrency is None:
-        concurrency = int(os.getenv("TELEMETRY_CONCURRENCY", 5))
+        concurrency = int(os.getenv("TELEMETRY_CONCURRENCY", 3))
+    if max_new_per_run is None:
+        max_new_per_run = int(os.getenv("TELEMETRY_MAX_NEW_PER_RUN", 25))
+
+    cached = [m for m in match_ids if _is_cached(m)]
+    new_matches = [m for m in match_ids if m not in cached]
+
+    if len(new_matches) > max_new_per_run:
+        print(
+            f"[INFO] {len(new_matches)} new matches found; fetching {max_new_per_run} this run "
+            f"to stay conservative on telemetry requests. Re-run later to continue backfilling."
+        )
+    to_fetch = cached + new_matches[:max_new_per_run]
+
     semaphore = asyncio.Semaphore(concurrency)
     async with aiohttp.ClientSession() as session:
-        tasks = [fetch_and_save_telemetry(session, match_id, semaphore) for match_id in match_ids]
+        tasks = [fetch_and_save_telemetry(session, match_id, semaphore) for match_id in to_fetch]
         results = await asyncio.gather(*tasks)
 
     saved = [m for status, m in results if status == "saved"]
