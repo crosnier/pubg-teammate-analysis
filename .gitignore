@@ -3,6 +3,7 @@ playerstats/*.json
 match-telemetry/*.json
 matches/*.json
 player-index.json
+bot-index.json
 
 # macOS system files
 .DS_Store
