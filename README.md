@@ -32,13 +32,17 @@ source .venv/bin/activate
 2. Install dependencies:
 
 ```bash
-pip install -r requirements.txt  # requests, python-dotenv, aiohttp
+pip install -r requirements.txt  # python-dotenv, aiohttp
 ```
 
 3. Set up a `.env` file with your PUBG API key:
 
 ```
 PUBG_API_KEY=your_api_key_here
+
+# Optional: default rate limit (requests/minute) for /players and /seasons
+# calls, used until the API's response headers take over. Defaults to 10.
+PUBG_RATE_LIMIT_PER_MINUTE=10
 ```
 
 4. Run it against a player name:
@@ -62,7 +66,7 @@ main.py
 
 ```
 ├── main.py                 # CLI entry point
-├── api/                     # PUBG API client: player stats, telemetry, player index
+├── api/                     # PUBG API client: player stats, telemetry, player index, rate limiter
 ├── utils/                   # Display formatting + I/O helpers
 ├── tests/                   # Unit tests
 ├── docs/                    # Vision, design specs, sample output
@@ -78,6 +82,11 @@ main.py
 - Only telemetry files are required to analyze bot/player behavior.
 - Match IDs come from cached stats, not fresh API calls, to avoid rate
   limits - match JSON doesn't change once a match is generated.
+- `/players` and `/seasons` calls are serialized through a request queue
+  (`api/rate_limiter.py`) that throttles to the API's live
+  `X-RateLimit-*` headers, falling back to `PUBG_RATE_LIMIT_PER_MINUTE`
+  until headers are seen. `/matches` and telemetry URLs are not
+  rate-limited and bypass the queue.
 
 ## Sample Output
 
