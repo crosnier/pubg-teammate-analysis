@@ -12,6 +12,8 @@ from utils.display_combat_stats import render_combat_stats
 from utils.bot_detection import find_latest_match, detect_bots
 from utils.display_bot_stats import render_bot_summary
 from api.bot_index import update_bot_index
+from utils.last_match_brief import find_latest_match_for_player, compute_last_match_brief
+from utils.display_last_match_brief import render_last_match_brief
 import asyncio
 
 
@@ -55,9 +57,18 @@ async def _run(playername):
     combat_stats = compute_combat_stats(player_id)
     render_combat_stats(combat_stats)
 
-    # Detect bots in the most recently played match and record them
+    # Last Match section: brief for this player, then bot detection for
+    # whichever cached match is most recent overall (a stand-in for "your"
+    # last match until Phase 3 auto-detection establishes a real self-identity)
     print("\n\n")
     latest_match_id, latest_events = find_latest_match()
+
+    player_match_id, player_events = find_latest_match_for_player(player_id)
+    if player_match_id:
+        brief = compute_last_match_brief(player_id, player_match_id, player_events)
+        played_with_you = (player_match_id == latest_match_id) if latest_match_id else None
+        render_last_match_brief(playername, brief, played_with_you)
+
     if latest_match_id:
         bots = detect_bots(latest_events)
         update_bot_index(bots, latest_match_id)
