@@ -18,14 +18,7 @@ from utils.match_scope import (
     select_scoped_match_ids,
 )
 
-ME = "account.me"
-RIVAL = "account.rival"
-
 NOW = datetime(2026, 7, 25, tzinfo=timezone.utc)
-
-
-def create_event(account_id):
-    return {"_T": "LogPlayerCreate", "character": {"accountId": account_id, "type": "user"}}
 
 
 def match_start(days_ago):
@@ -42,24 +35,35 @@ class TestSelectScopedMatchIds(unittest.TestCase):
     def setUp(self):
         self.tmpdir = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmpdir.cleanup)
+        self.candidate_match_ids = []
 
-    def _write_match(self, match_id, days_ago, present=True):
+    def _write_match(self, match_id, days_ago, is_candidate=True):
+        # is_candidate=False simulates a telemetry file that's cached (e.g.
+        # from looking up a different player) but doesn't belong to this
+        # player's own known match list - select_scoped_match_ids should
+        # never consider it, since it only ever looks at candidate_match_ids.
         events = [match_start(days_ago)]
-        if present:
-            events.append(create_event(ME))
-        else:
-            events.append(create_event(RIVAL))
         path = os.path.join(self.tmpdir.name, f"{match_id}-telemetry.json")
         with open(path, "w") as f:
             json.dump(events, f)
+        if is_candidate:
+            self.candidate_match_ids.append(match_id)
 
-    def test_excludes_matches_the_player_never_played(self):
-        self._write_match("mine", days_ago=1, present=True)
-        self._write_match("unrelated", days_ago=1, present=False)
+    def test_ignores_cached_matches_not_in_the_candidate_list(self):
+        self._write_match("mine", days_ago=1, is_candidate=True)
+        self._write_match("someone-elses", days_ago=1, is_candidate=False)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(result, ["mine"])
+
+    def test_skips_candidate_matches_not_yet_cached(self):
+        self._write_match("cached", days_ago=1, is_candidate=True)
+        self.candidate_match_ids.append("not-cached-yet")
+
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
+
+        self.assertEqual(result, ["cached"])
 
     def test_returns_all_available_when_under_cap(self):
         """Fewer matches exist than the cap - widening exhausts the full
@@ -69,7 +73,7 @@ class TestSelectScopedMatchIds(unittest.TestCase):
         for i in range(count):
             self._write_match(f"recent-{i}", days_ago=5)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(len(result), count)
 
@@ -78,7 +82,7 @@ class TestSelectScopedMatchIds(unittest.TestCase):
         for i in range(count):
             self._write_match(f"recent-{i}", days_ago=5)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(len(result), MAX_MATCHES)
 
@@ -87,7 +91,7 @@ class TestSelectScopedMatchIds(unittest.TestCase):
         for i in range(count):
             self._write_match(f"match-{i}", days_ago=count - i)  # highest index is most recent (1 day ago)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertIn(f"match-{count - 1}", result)
         self.assertNotIn("match-0", result)
@@ -100,7 +104,7 @@ class TestSelectScopedMatchIds(unittest.TestCase):
         for i in range(within_60):
             self._write_match(f"within-60-{i}", days_ago=INITIAL_WINDOW_DAYS + WINDOW_INCREMENT_DAYS - 5)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(len(result), MAX_MATCHES)
 
@@ -112,7 +116,7 @@ class TestSelectScopedMatchIds(unittest.TestCase):
         for i in range(within_60):
             self._write_match(f"within-60-{i}", days_ago=INITIAL_WINDOW_DAYS + WINDOW_INCREMENT_DAYS - 5)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(len(result), within_30 + within_60)
 
@@ -120,19 +124,19 @@ class TestSelectScopedMatchIds(unittest.TestCase):
         for i in range(10):
             self._write_match(f"old-{i}", days_ago=MAX_WINDOW_DAYS - 5)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(len(result), 10)
 
     def test_matches_beyond_max_window_excluded_even_if_sparse(self):
         self._write_match("too-old", days_ago=MAX_WINDOW_DAYS + 1)
 
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+        result = select_scoped_match_ids(self.candidate_match_ids, telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(result, [])
 
-    def test_empty_when_no_matches_cached(self):
-        result = select_scoped_match_ids(ME, telemetry_dir=self.tmpdir.name, now=NOW)
+    def test_empty_when_no_candidate_matches(self):
+        result = select_scoped_match_ids([], telemetry_dir=self.tmpdir.name, now=NOW)
 
         self.assertEqual(result, [])
 

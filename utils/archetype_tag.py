@@ -1,7 +1,6 @@
 # ==============================
 # utils/archetype_tag.py
 # ==============================
-from utils.match_scope import select_scoped_match_ids
 from utils.range_signal import compute_range_signal
 from utils.tempo_signal import compute_tempo_signal
 from utils.weapon_signature import compute_weapon_signature
@@ -21,17 +20,14 @@ TEMPO_TO_TEMPERAMENT = {
 }
 
 
-def compute_archetype_tag(account_id, telemetry_dir=TELEMETRY_DIR, match_ids=None):
+def compute_archetype_tag(account_id, match_ids, telemetry_dir=TELEMETRY_DIR):
     """Combine tempo, range, and weapon-signature into the Archetype Tag.
 
-    Resolves the player's scoped match set once (see match_scope.py) and
-    reuses it across all three signals, rather than each one independently
-    rescanning the full shared telemetry cache.
+    match_ids is the player's scoped match set (see match_scope.py),
+    resolved once by the caller and reused across all three signals here
+    rather than each one independently rescanning the telemetry cache.
     """
-    if match_ids is None:
-        match_ids = set(select_scoped_match_ids(account_id, telemetry_dir=telemetry_dir))
-    else:
-        match_ids = set(match_ids)
+    match_ids = set(match_ids)
 
     tempo = compute_tempo_signal(account_id, match_ids=match_ids, telemetry_dir=telemetry_dir)
     range_signal = compute_range_signal(account_id, match_ids=match_ids, telemetry_dir=telemetry_dir)

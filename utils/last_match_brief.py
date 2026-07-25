@@ -1,7 +1,6 @@
 # ==============================
 # utils/last_match_brief.py
 # ==============================
-import glob
 import json
 import os
 from datetime import datetime
@@ -24,24 +23,28 @@ _TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 SAME_ENGAGEMENT_WINDOW_SECONDS = 30
 
 
-def _load_telemetry_files(telemetry_dir=TELEMETRY_DIR):
-    for path in glob.glob(os.path.join(telemetry_dir, "*-telemetry.json")):
-        match_id = os.path.basename(path).replace("-telemetry.json", "")
-        with open(path, "r") as f:
-            yield match_id, json.load(f)
-
-
-def find_latest_match_for_player(account_id, telemetry_dir=TELEMETRY_DIR):
+def find_latest_match_for_player(account_id, candidate_match_ids, telemetry_dir=TELEMETRY_DIR):
     """Return (match_id, events) for the player's most recently played cached match.
 
-    Same LogMatchStart-timestamp approach as bot_detection.find_latest_match,
-    but scoped to matches the given account actually appears in.
+    candidate_match_ids is the player's authoritative match list, straight
+    from the PUBG player-stats API response (see main.py) - this only opens
+    the specific cached files that are actually this player's own, rather
+    than scanning and checking presence across the whole shared telemetry
+    cache (which holds many other players' matches too). Not every
+    candidate match is guaranteed to be cached yet, so missing files are
+    skipped rather than erroring.
     """
     latest_timestamp = None
     latest_match_id = None
     latest_events = None
 
-    for match_id, events in _load_telemetry_files(telemetry_dir):
+    for match_id in candidate_match_ids:
+        path = os.path.join(telemetry_dir, f"{match_id}-telemetry.json")
+        if not os.path.exists(path):
+            continue
+        with open(path, "r") as f:
+            events = json.load(f)
+
         if not player_present_in_match(account_id, events):
             continue
 

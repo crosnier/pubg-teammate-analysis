@@ -59,13 +59,15 @@ async def _run(playername):
 
     # Display combat stats mined from cached telemetry
     print("\n\n")
-    combat_stats = compute_combat_stats(player_id)
+    combat_stats = compute_combat_stats(player_id, match_ids=match_ids)
     render_combat_stats(combat_stats)
 
     # Resolve the player's scoped match set once and reuse it across both
     # signal computations below, rather than each one independently
-    # rescanning the full shared telemetry cache.
-    scoped_match_ids = set(select_scoped_match_ids(player_id))
+    # rescanning the telemetry cache. match_ids (this player's own known
+    # matches, from the player-stats API response above) is the candidate
+    # list - never the whole shared cache, which holds other players' too.
+    scoped_match_ids = set(select_scoped_match_ids(match_ids))
 
     # Display Archetype Tag (tempo + range + weapon signature) mined from cached telemetry
     print("\n\n")
@@ -83,7 +85,7 @@ async def _run(playername):
     print("\n\n")
     latest_match_id, latest_events = find_latest_match()
 
-    player_match_id, player_events = find_latest_match_for_player(player_id)
+    player_match_id, player_events = find_latest_match_for_player(player_id, match_ids)
     if player_match_id:
         brief = compute_last_match_brief(player_id, player_match_id, player_events)
         played_with_you = (player_match_id == latest_match_id) if latest_match_id else None

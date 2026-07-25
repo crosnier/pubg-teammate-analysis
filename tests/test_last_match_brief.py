@@ -187,23 +187,46 @@ class TestFindLatestMatchForPlayer(unittest.TestCase):
             json.dump(events, f)
 
     def test_only_considers_matches_player_appears_in(self):
+        # Defensive check: even if a candidate ID turns out not to actually
+        # contain the player (shouldn't happen in practice, since
+        # candidate_match_ids comes from the player's own API data), it's
+        # still excluded rather than trusted blindly.
         self._write_match("with-me", "2026-01-01T00:00:00.000Z", ME)
         self._write_match("without-me", "2026-06-01T00:00:00.000Z", KILLER)
 
-        match_id, events = find_latest_match_for_player(ME, telemetry_dir=self.tmpdir.name)
+        match_id, events = find_latest_match_for_player(
+            ME, ["with-me", "without-me"], telemetry_dir=self.tmpdir.name
+        )
 
         self.assertEqual(match_id, "with-me")
+
+    def test_ignores_cached_matches_not_in_the_candidate_list(self):
+        self._write_match("mine", "2026-01-01T00:00:00.000Z", ME)
+        self._write_match("someone-elses-more-recent", "2026-06-01T00:00:00.000Z", KILLER)
+
+        match_id, events = find_latest_match_for_player(ME, ["mine"], telemetry_dir=self.tmpdir.name)
+
+        self.assertEqual(match_id, "mine")
+
+    def test_skips_candidate_matches_not_yet_cached(self):
+        self._write_match("cached", "2026-01-01T00:00:00.000Z", ME)
+
+        match_id, events = find_latest_match_for_player(
+            ME, ["cached", "not-cached-yet"], telemetry_dir=self.tmpdir.name
+        )
+
+        self.assertEqual(match_id, "cached")
 
     def test_picks_latest_among_matches_player_appears_in(self):
         self._write_match("older", "2026-01-01T00:00:00.000Z", ME)
         self._write_match("newer", "2026-03-01T00:00:00.000Z", ME)
 
-        match_id, events = find_latest_match_for_player(ME, telemetry_dir=self.tmpdir.name)
+        match_id, events = find_latest_match_for_player(ME, ["older", "newer"], telemetry_dir=self.tmpdir.name)
 
         self.assertEqual(match_id, "newer")
 
     def test_no_matches_returns_none(self):
-        match_id, events = find_latest_match_for_player(ME, telemetry_dir=self.tmpdir.name)
+        match_id, events = find_latest_match_for_player(ME, [], telemetry_dir=self.tmpdir.name)
 
         self.assertIsNone(match_id)
         self.assertIsNone(events)
