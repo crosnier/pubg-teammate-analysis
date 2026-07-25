@@ -17,13 +17,21 @@ if not logger.handlers:
 
 DEFAULT_LIMIT_PER_MINUTE = int(os.getenv("PUBG_RATE_LIMIT_PER_MINUTE", 10))
 
+# PUBG's documented default API key limit is 10 requests/minute
+# (https://documentation.pubg.com/en/rate-limits.html). Pace requests to
+# only this fraction of whatever limit is in effect - the configured
+# default or, once seen, the live X-RateLimit-Limit value - so normal
+# jitter/timing never trips the API's own 429 threshold.
+SAFETY_MARGIN = 0.85
+
 
 class RateLimitedQueue:
     """Serializes requests to rate-limited PUBG API endpoints.
 
     Falls back to a configurable default rate (requests/minute) until the
     API's X-RateLimit-* response headers are seen, then throttles against
-    the reported Limit/Remaining/Reset instead.
+    the reported Limit/Remaining/Reset instead. Actual pacing stays at
+    SAFETY_MARGIN of whichever limit is active, never the full rate.
     """
 
     def __init__(self, default_limit_per_minute=DEFAULT_LIMIT_PER_MINUTE):
@@ -52,11 +60,12 @@ class RateLimitedQueue:
             return
 
         if self._last_request_at is not None:
-            min_interval = 60.0 / self._limit
+            paced_limit = self._limit * SAFETY_MARGIN
+            min_interval = 60.0 / paced_limit
             elapsed = time.time() - self._last_request_at
             if elapsed < min_interval:
                 wait_time = min_interval - elapsed
-                logger.info(f"Throttling to {self._limit}/min, waiting {wait_time:.1f}s")
+                logger.info(f"Throttling to {paced_limit:.1f}/min ({SAFETY_MARGIN:.0%} of {self._limit}/min), waiting {wait_time:.1f}s")
                 await asyncio.sleep(wait_time)
 
     def _update_from_headers(self, headers):
