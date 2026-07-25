@@ -68,7 +68,7 @@ def print_static_banner(playername=None):
 
 
 def format_number(val, key=None):
-    if key and "TimeSurvived" in key:
+    if key and "timesurvived" in key.lower():
         minutes = int(val) // 60
         return f"{minutes:,}"
     if isinstance(val, (int, float)):
