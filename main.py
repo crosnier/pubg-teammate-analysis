@@ -1,9 +1,8 @@
 # ==============================
 # main CLI entry point
 # ==============================
-from api.player_stats import fetch_player_stats
+from api.player_stats import fetch_player_and_match_ids
 from api.rate_limiter import player_api_queue
-from utils.io_helpers import save_json
 from utils.display_stats_by_mode import render_ascii_table, load_player_stats
 from utils.display_match_history import display_match_history
 from api.telemetry_fetcher import fetch_telemetry_for_matches
@@ -31,8 +30,7 @@ async def run(playername):
         await player_api_queue.close()
 
 async def _run(playername):
-    data, player_id = await fetch_player_stats(playername)
-    save_json(data, f"playerstats/{playername}.json")
+    player_id, match_ids = await fetch_player_and_match_ids(playername)
     print(f"[SUCCESS] Stats saved for '{playername}' (account ID: {player_id})")
     print()
     print()
@@ -44,13 +42,6 @@ async def _run(playername):
     # Display match history grouped by mode
     print("\n\n")
     display_match_history(playername)
-
-    # Fetch telemetry for all matches
-    match_ids = []
-    relationships = data["data"]["relationships"]
-    for key in relationships:
-        if key.startswith("matches"):
-            match_ids.extend([entry["id"] for entry in relationships[key].get("data", [])])
 
     print()
     print()

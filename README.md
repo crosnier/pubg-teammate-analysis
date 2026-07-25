@@ -52,6 +52,12 @@ python doctor.py
 python main.py PlayerName
 ```
 
+To profile a whole squad at once (2+ players, you first) instead:
+
+```bash
+python squad.py YourName Teammate1 Teammate2
+```
+
 ### Windows / live-test machine
 
 There's no dev environment on Windows - just a cold `git pull` of `main`.
@@ -104,10 +110,20 @@ cached match, since telemetry caching is shared across all players ever
 looked up. `main.py` resolves this scoped match set once per run and
 reuses it across both, rather than each rescanning the cache separately.
 
+`squad.py` is a separate multi-player entry point (`main.py`'s
+single-player flow is untouched) for profiling a whole squad in one run:
+`utils/squad_read.py` + `utils/squad_roster.py` combine each teammate's
+Archetype Tag into a synergy/coverage read, bolstered with a data-backed
+"who opens first" line when the pattern is consistent enough. Player-stats
+fetches run concurrently across the squad, and telemetry is fetched once
+per unique match across the whole squad rather than once per player, so a
+match two teammates shared only gets pulled once.
+
 ## Project Structure
 
 ```
-├── main.py                 # CLI entry point
+├── main.py                 # CLI entry point (single player)
+├── squad.py                 # CLI entry point (2+ players at once)
 ├── doctor.py                # Environment health check (Python, deps, .env, API heartbeat)
 ├── setup.ps1                # One-click Windows setup (venv, deps, .env, doctor)
 ├── api/                     # PUBG API client: player stats, telemetry, player index, rate limiter

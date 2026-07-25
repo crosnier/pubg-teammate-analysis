@@ -104,10 +104,10 @@ def _load_dated_events(match_ids, telemetry_dir):
         yield events, datetime.fromisoformat(start_event["_D"].replace("Z", "+00:00"))
 
 
-def compute_engagement_lead(self_id, teammate_id, teammate_name, shared_match_ids, telemetry_dir=TELEMETRY_DIR):
-    """Bolstered "who opens first" line, or None if the pattern isn't
-    consistent (or common) enough across the most recent shared matches to
-    say so with confidence.
+def compute_engagement_lead_stats(self_id, teammate_id, shared_match_ids, telemetry_dir=TELEMETRY_DIR):
+    """Who opens first more often, as structured data - or None if the
+    pattern isn't consistent (or common) enough across the most recent
+    shared matches to say so with confidence.
 
     "Opens first" compares each player's own time-to-first-contact
     (tempo_signal.py) within the same match - whichever of the two made
@@ -116,6 +116,11 @@ def compute_engagement_lead(self_id, teammate_id, teammate_name, shared_match_id
     contact reading count (a match one of them never engaged in isn't a
     fair comparison). Reuses tempo_signal's own presence/contact logic
     rather than re-deriving it.
+
+    Returns {"leader": "self"|"teammate", "count": N, "window": N} - kept
+    structured (not pre-formatted into a sentence) so callers comparing
+    multiple teammates (Squad Roster) can pick the strongest result before
+    formatting anything.
     """
     dated_openers = []
     for events, match_start in _load_dated_events(shared_match_ids, telemetry_dir):
@@ -129,7 +134,7 @@ def compute_engagement_lead(self_id, teammate_id, teammate_name, shared_match_id
         if self_seconds is None or teammate_seconds is None or self_seconds == teammate_seconds:
             continue
 
-        opener = "you" if self_seconds < teammate_seconds else teammate_name
+        opener = "self" if self_seconds < teammate_seconds else "teammate"
         dated_openers.append((match_start, opener))
 
     dated_openers.sort(key=lambda r: r[0], reverse=True)
@@ -146,12 +151,27 @@ def compute_engagement_lead(self_id, teammate_id, teammate_name, shared_match_id
     if count < BOLSTER_THRESHOLD:
         return None
 
-    if leader == "you":
-        return f"High confidence: you've opened the first engagement in {count} of your last {len(recent_window)} shared matches."
+    return {"leader": leader, "count": count, "window": len(recent_window)}
+
+
+def format_engagement_lead(stats, teammate_name):
+    """Render compute_engagement_lead_stats' structured result as the
+    "High confidence" display sentence."""
+    if stats is None:
+        return None
+    if stats["leader"] == "self":
+        return f"High confidence: you've opened the first engagement in {stats['count']} of your last {stats['window']} shared matches."
     return (
-        f"High confidence: {leader} has opened the first engagement in {count} of your last "
-        f"{len(recent_window)} shared matches - expect {leader} to push first."
+        f"High confidence: {teammate_name} has opened the first engagement in {stats['count']} of your last "
+        f"{stats['window']} shared matches - expect {teammate_name} to push first."
     )
+
+
+def compute_engagement_lead(self_id, teammate_id, teammate_name, shared_match_ids, telemetry_dir=TELEMETRY_DIR):
+    """Bolstered "who opens first" display line for the two-player case
+    (Squad Read) - combines compute_engagement_lead_stats + format_engagement_lead."""
+    stats = compute_engagement_lead_stats(self_id, teammate_id, shared_match_ids, telemetry_dir=telemetry_dir)
+    return format_engagement_lead(stats, teammate_name)
 
 
 def compute_squad_read(

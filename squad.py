@@ -1,0 +1,90 @@
+# ==============================
+# squad CLI entry point - profile an entire squad at once
+# ==============================
+"""
+Profile a whole squad (2+ players) in one run: fetches/refreshes each
+player's stats concurrently, shares one deduplicated telemetry fetch
+across the whole squad (a match two teammates played together only needs
+pulling once), then renders the Squad Roster - a coverage/distribution
+summary plus a full Archetype Tag + Headline Number card per teammate.
+
+Kept as a genuinely separate entry point from main.py rather than a mode
+switch inside it, so the single-player flow (main.py <playername>) stays
+completely untouched.
+"""
+import argparse
+import asyncio
+
+from api.player_stats import fetch_player_and_match_ids
+from api.rate_limiter import player_api_queue
+from api.telemetry_fetcher import fetch_telemetry_for_matches
+from utils.archetype_tag import compute_archetype_tag
+from utils.headline_number import compute_headline_number
+from utils.match_scope import select_scoped_match_ids
+from utils.squad_roster import compute_squad_roster
+from utils.display_squad_roster import render_squad_roster, render_full_squad_cards
+
+
+async def run(playernames):
+    try:
+        await _run(playernames)
+    finally:
+        await player_api_queue.close()
+
+
+async def _run(playernames):
+    # Concurrent player-stats fetch across the squad - safe today since
+    # api/rate_limiter.py's queue already serializes the actual HTTP calls
+    # via an asyncio.Lock regardless of how many callers use it at once.
+    fetched = await asyncio.gather(*(fetch_player_and_match_ids(name) for name in playernames))
+
+    members = []
+    for name, (account_id, match_ids) in zip(playernames, fetched):
+        print(f"[SUCCESS] Stats saved for '{name}' (account ID: {account_id})")
+        members.append({"name": name, "account_id": account_id, "match_ids": match_ids})
+
+    # One combined, deduplicated telemetry fetch for the whole squad - a
+    # match two teammates played together only needs pulling once
+    # (fetch_telemetry_for_matches already skips already-cached matches),
+    # and this keeps the per-run new-match cap meaningful for the squad as
+    # a whole rather than effectively multiplying it by squad size.
+    all_match_ids = set()
+    for m in members:
+        all_match_ids.update(m["match_ids"])
+    print()
+    print(f"[INFO] Fetching telemetry for {len(all_match_ids)} unique matches across {len(playernames)} players...")
+    await fetch_telemetry_for_matches(list(all_match_ids))
+
+    archetypes = {}
+    headlines = {}
+    for m in members:
+        scoped = set(select_scoped_match_ids(m["match_ids"]))
+        archetype = compute_archetype_tag(m["account_id"], match_ids=scoped)
+        m["archetype"] = archetype
+        archetypes[m["name"]] = archetype
+        headlines[m["name"]] = compute_headline_number(m["account_id"], match_ids=scoped)
+
+    roster = compute_squad_roster(members)
+
+    print("\n\n")
+    render_squad_roster(roster)
+    render_full_squad_cards(members, archetypes, headlines)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Profile a full squad (2+ players) at once.")
+    parser.add_argument("playernames", nargs="+", help="PUBG player names in the squad, you first")
+    args = parser.parse_args()
+
+    if len(args.playernames) < 2:
+        print("[ERROR] Provide at least 2 player names for a squad lookup (you first, then teammates).")
+        return
+
+    try:
+        asyncio.run(run(args.playernames))
+    except Exception as e:
+        print(f"[ERROR] {e}")
+
+
+if __name__ == "__main__":
+    main()
