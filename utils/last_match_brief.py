@@ -202,6 +202,7 @@ def compute_last_match_brief(account_id, match_id, events):
             kdi = event.get("killerDamageInfo") or {}
             death_info = {
                 "killed_by": killer.get("name", "Unknown"),
+                "killer_account_id": killer.get("accountId"),
                 "weapon": _clean_weapon_name(kdi.get("damageCauserName")),
                 "distance_m": round(kdi.get("distance", 0) / 100, 1),
             }

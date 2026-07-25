@@ -7,7 +7,7 @@ from utils.display_headline_number import render_headline_number
 from utils.display_last_match_brief import render_last_match_brief
 
 
-def render_solo_profile(playername, archetype, headline, combat_stats, coaching, brief):
+def render_solo_profile(playername, archetype, headline, combat_stats, coaching, brief, killer_intel_line=None):
     print("=============================================")
     print(f"🧍 SOLO PROFILE - {playername}")
     print("=============================================")
@@ -28,4 +28,4 @@ def render_solo_profile(playername, archetype, headline, combat_stats, coaching,
 
     if brief:
         print()
-        render_last_match_brief(playername, brief)
+        render_last_match_brief(playername, brief, show_squad_status=False, killer_intel_line=killer_intel_line)
