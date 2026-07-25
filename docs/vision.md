@@ -50,9 +50,11 @@ order:
 2. **Match-level insight** (current) - mine telemetry for behavioral signal
    instead of just raw stat totals. Mode 1 (pre-game round-start intel) is
    built: Archetype Tag, Weapon Signature, the Headline Number, Last Match
-   Snapshot, Squad Read, and Squad Roster, covering a single player through
-   a full squad. Mode 2 (after-action, opponent/self-improvement framing)
-   and the map drop-zone/flow slot are still ahead.
+   Snapshot, Squad Read, Squad Roster, and a solo profile (`solo.py`) with
+   a self-coaching capstone in place of Squad Read's teammate comparison,
+   covering a single player alone through a full squad. Mode 2
+   (after-action, opponent/self-improvement framing) and the map
+   drop-zone/flow slot are still ahead.
 3. **Automatic squad detection** - recognize when a new round has loaded and
    identify teammates from on-screen player names, without manual input.
 4. **Delivery surface** - move profile output from console text to a web

@@ -254,6 +254,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
             candidates.append({
                 "key": "kills_before_death",
                 "score": _score_magnitude(values),
+                "value": statistics.mean(values),
                 "sentence": (
                     f"Averages {statistics.mean(values):.1f} kills before first death "
                     f"over {possessive} last {matches_analyzed} matches"
@@ -265,6 +266,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
             candidates.append({
                 "key": "revives",
                 "score": _score_magnitude(values),
+                "value": statistics.mean(values),
                 "sentence": (
                     f"Averages {statistics.mean(values):.1f} revives per match over {possessive} "
                     f"last {matches_analyzed} matches"
@@ -276,6 +278,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
             candidates.append({
                 "key": "damage",
                 "score": _score_magnitude(values),
+                "value": statistics.mean(values),
                 "sentence": (
                     f"Averages {statistics.mean(values):.0f} damage per match over {possessive} "
                     f"last {matches_analyzed} matches"
@@ -289,6 +292,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
             candidates.append({
                 "key": "close_range_win_rate",
                 "score": _score_rate(values),
+                "value": statistics.mean(values),
                 "sentence": (
                     f"Wins {statistics.mean(values):.0%} of close-range fights "
                     f"(inside {CLOSE_RANGE_MAX_METERS}m) - {wins}/{len(values)} across "
@@ -303,6 +307,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
             candidates.append({
                 "key": "knockdown_conversion_rate",
                 "score": _score_rate(values),
+                "value": statistics.mean(values),
                 "sentence": (
                     f"Converts {statistics.mean(values):.0%} of knockdowns into kills - "
                     f"{converted}/{len(values)} over {possessive} last {matches_with_knockdowns} matches"
@@ -315,6 +320,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
             "headline": best["sentence"],
             "stat_key": best["key"],
             "score": best["score"],
+            "value": best["value"],
             "matches_analyzed": matches_analyzed,
         }
 
@@ -323,5 +329,6 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
         if matches_analyzed else "Not enough data yet",
         "stat_key": "fallback_kill_count",
         "score": None,
+        "value": None,
         "matches_analyzed": matches_analyzed,
     }
