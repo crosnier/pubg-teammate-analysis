@@ -6,16 +6,29 @@ import json
 import os
 from datetime import datetime
 
+from utils.last_match_brief import player_present_in_match
+
 TELEMETRY_DIR = "match-telemetry"
 
 # Bucket thresholds in seconds from LogMatchStart to first real-player
 # contact, and the window after that contact within which a kill still
-# reads as "quick". Placeholder values pending calibration against real
-# match-pacing data (varies by map/mode) - see docs/design/storyboard-profile.md.
-VERY_FAST_CONTACT_SECONDS = 120
-SHORT_DELAY_SECONDS = 300
-MODERATE_DELAY_SECONDS = 600
-QUICK_KILL_WINDOW_SECONDS = 60
+# reads as "quick". Calibrated against 101,194 real (player, match)
+# time-to-first-contact readings and 56,385 contact-to-kill gap readings
+# across 1,636 cached matches (including top-30 ranked PC-NA leaderboard
+# players) - quartile splits of the real distribution:
+# p25=128s, p50=222s, p75=494s for contact; p60=~30s for the kill gap
+# (loosely - "quick" should mean faster than typical, not merely not-slow).
+VERY_FAST_CONTACT_SECONDS = 130
+SHORT_DELAY_SECONDS = 220
+MODERATE_DELAY_SECONDS = 490
+QUICK_KILL_WINDOW_SECONDS = 30
+
+# Minimum matches with a valid reading before naming a tempo tag -
+# matches range_signal.py/weapon_signature.py's MIN_KILLS_FOR_SIGNAL=8,
+# grounded in Epstein's aggregation principle (single-occasion behavioral
+# reliability is low; ~8+ occasions is where aggregated reliability
+# becomes meaningfully informative, per Spearman-Brown).
+MIN_MATCHES_FOR_SIGNAL = 8
 
 TEMPO_BUCKET_ORDER = [
     "Hot-Drop Headhunter",
@@ -48,7 +61,14 @@ def compute_time_to_first_contact_from_events(account_id, telemetry_events):
     covers both damage-only pokes and kills, since a kill is damage that
     finished the job. Environmental/self damage is excluded because it
     has no real opponent on the other end.
+
+    A match the player never appears in returns None rather than a
+    "Slow-Roll Patient" reading - telemetry caching is shared across
+    players, so the cache holds many matches unrelated to this account.
     """
+    if not player_present_in_match(account_id, telemetry_events):
+        return None
+
     start_event = next((e for e in telemetry_events if e.get("_T") == "LogMatchStart"), None)
     if not start_event or not start_event.get("_D"):
         return None
@@ -104,6 +124,8 @@ def compute_tempo_signal(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR
 
     Overall tag is the most frequent per-match bucket, ties broken by
     bucket priority (fastest-tempo bucket first) rather than arbitrarily.
+    Requires MIN_MATCHES_FOR_SIGNAL matches before naming a tag - a
+    single match is not a reliable read on tempo.
     """
     per_match = []
     for events in _load_telemetry_files(match_ids, telemetry_dir):
@@ -116,7 +138,7 @@ def compute_tempo_signal(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR
         bucket = reading["tempo_bucket"]
         bucket_counts[bucket] = bucket_counts.get(bucket, 0) + 1
 
-    if bucket_counts:
+    if bucket_counts and len(per_match) >= MIN_MATCHES_FOR_SIGNAL:
         max_count = max(bucket_counts.values())
         tied = [b for b, c in bucket_counts.items() if c == max_count]
         tempo_tag = next(b for b in TEMPO_BUCKET_ORDER if b in tied)

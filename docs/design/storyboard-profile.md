@@ -9,16 +9,16 @@ post-match coaching actually values.
 
 ## **Features**
 
-- [ ] Archetype Tag (headline label: range + tempo + signature weapon)
+- [x] Archetype Tag (headline label: range + tempo + signature weapon) - see `utils/archetype_tag.py`; presented as plain tempo/range/weapon fields plus a short `Range/Temperament` tag rather than an invented flavor-text headline
 - [ ] Map Drop Zone + Flow (primary + secondary landing region, per-region flow)
 - [ ] The Headline Number (one differentiating, confidence-gated stat)
-- [ ] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern)
+- [x] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern) - see `utils/weapon_signature.py`
 - [ ] Last Match Snapshot (extends #13, adds squad-status-at-death)
 - [ ] Squad Read (synergy/gap line, bolstered when high-confidence)
 - [ ] Squad Roster summary view (Squads mode, 2+ teammates)
 - [ ] Mode 2: After-Action Report (conceptual scope only)
 - [ ] Solo mode variant (conceptual scope only)
-- [ ] Data Budget & Fetch Policy
+- [x] Data Budget & Fetch Policy - see `utils/match_scope.py` (recency-window + match-count cap, both env-configurable)
 - [ ] Trigger & Invocation (Round Start / After Action)
 - [ ] Tester Mode (dev-machine feedback loop)
 
@@ -419,11 +419,16 @@ since there's no detection code to log from.
 
 ## Open questions for implementation
 
-- Exact time-to-first-contact bucket thresholds (Archetype tempo)
 - Exact sample size N for map tendency
-- Exact Archetype range-axis thresholds
 - Region-boundary reference data source per map (callout name ->
   coordinate bounds)
 - Mode 2's full slot design (this doc only scopes it conceptually)
 - The specific failsafe hotkey combination
-- The per-player historical-match telemetry cap (needs a testing spike)
+
+Resolved: Archetype tempo bucket thresholds and range-axis thresholds are
+both calibrated against real telemetry (1,636 cached matches, including
+top-30 ranked PC-NA leaderboard players) - see `utils/tempo_signal.py` and
+`utils/range_signal.py`. The per-player historical-match cap is
+implemented in `utils/match_scope.py`, currently set low (50 matches)
+pending a dedicated performance pass, not yet the intended production
+default (250).
