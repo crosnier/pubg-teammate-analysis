@@ -7,15 +7,15 @@
     --ink-dim: #58635e;
     --line: #d4d9d3;
     --accent: #2f7d70;
-    --accent-ink: #ffffff;
+    --accent-soft: #dff0ec;
+    --api: #3d6b86;
+    --api-soft: #e1ebf1;
     --fresh: #2f6fa8;
-    --fresh-soft: #e4edf6;
+    --fresh-soft: #dce9f6;
     --immutable: #a9782c;
-    --immutable-soft: #f6ecd7;
+    --immutable-soft: #f5ead0;
     --merge: #6f5aa3;
-    --merge-soft: #ece7f6;
-    --derived: #58635e;
-    --code-bg: #e9ece7;
+    --merge-soft: #e9e2f5;
     --shadow: 0 1px 2px rgba(20, 30, 25, 0.06), 0 8px 24px rgba(20, 30, 25, 0.05);
   }
 
@@ -26,15 +26,15 @@
     --ink-dim: #93a19a;
     --line: #2a322c;
     --accent: #5fbfae;
-    --accent-ink: #0b1512;
+    --accent-soft: #17332c;
+    --api: #8fc0dd;
+    --api-soft: #182a34;
     --fresh: #7fb3e0;
-    --fresh-soft: #1c2a36;
+    --fresh-soft: #17293a;
     --immutable: #e0b262;
-    --immutable-soft: #332a17;
+    --immutable-soft: #332916;
     --merge: #b6a4e6;
     --merge-soft: #241f36;
-    --derived: #93a19a;
-    --code-bg: #1e2521;
     --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px rgba(0, 0, 0, 0.35);
   }
 
@@ -46,20 +46,27 @@
       --ink-dim: #93a19a;
       --line: #2a322c;
       --accent: #5fbfae;
-      --accent-ink: #0b1512;
+      --accent-soft: #17332c;
+      --api: #8fc0dd;
+      --api-soft: #182a34;
       --fresh: #7fb3e0;
-      --fresh-soft: #1c2a36;
+      --fresh-soft: #17293a;
       --immutable: #e0b262;
-      --immutable-soft: #332a17;
+      --immutable-soft: #332916;
       --merge: #b6a4e6;
       --merge-soft: #241f36;
-      --derived: #93a19a;
-      --code-bg: #1e2521;
       --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px rgba(0, 0, 0, 0.35);
     }
   }
 
   * { box-sizing: border-box; }
+
+  svg { display: block; overflow: visible; }
+  svg.icon { flex: none; width: 16px; height: 16px; }
+  svg.icon polygon, svg.icon rect, svg.icon circle, svg.icon line {
+    fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round;
+  }
+  svg.icon polygon { fill: currentColor; stroke: none; }
 
   body {
     margin: 0;
@@ -70,9 +77,7 @@
     -webkit-font-smoothing: antialiased;
   }
 
-  .mono {
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
-  }
+  .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace; }
 
   header {
     padding: 2.25rem clamp(1.25rem, 4vw, 3rem) 1.25rem;
@@ -99,12 +104,7 @@
     letter-spacing: -0.01em;
   }
 
-  header p {
-    max-width: 62ch;
-    color: var(--ink-dim);
-    margin: 0;
-    font-size: 0.96rem;
-  }
+  header p { max-width: 62ch; color: var(--ink-dim); margin: 0; font-size: 0.96rem; }
 
   nav.tabs {
     max-width: 1180px;
@@ -116,13 +116,12 @@
     position: sticky;
     top: 0;
     background: var(--bg);
-    z-index: 5;
+    z-index: 10;
   }
 
   .tab-btn {
     font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
     font-size: 0.82rem;
-    letter-spacing: 0.02em;
     background: transparent;
     border: none;
     color: var(--ink-dim);
@@ -132,25 +131,11 @@
     margin-bottom: -1px;
     transition: color 0.15s ease, border-color 0.15s ease;
   }
-
   .tab-btn:hover { color: var(--ink); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .tab-btn.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-
-  .tab-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-
-  main {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 1.75rem clamp(1.25rem, 4vw, 3rem) 4rem;
-  }
-
+  main { max-width: 1180px; margin: 0 auto; padding: 1.75rem clamp(1.25rem, 4vw, 3rem) 4rem; }
   .panel { display: none; }
   .panel.active { display: block; }
 
@@ -160,249 +145,448 @@
     font-weight: 600;
     margin: 0 0 0.35rem;
   }
+  .panel > p.lede { color: var(--ink-dim); max-width: 68ch; margin: 0 0 1.1rem; font-size: 0.95rem; }
 
-  .panel > p.lede {
-    color: var(--ink-dim);
-    max-width: 68ch;
-    margin: 0 0 1.25rem;
-    font-size: 0.95rem;
-  }
+  /* ---------- shared legend chip ---------- */
+  .legend { display: flex; flex-wrap: wrap; gap: 0.5rem 1.1rem; margin: 0 0 1.25rem;
+    padding: 0.75rem 1rem; background: var(--bg-raised); border: 1px solid var(--line);
+    border-radius: 8px; box-shadow: var(--shadow); }
+  .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; color: var(--ink-dim); }
+  .legend-item svg.icon { color: var(--ink); }
+  .swatch { width: 0.65rem; height: 0.65rem; border-radius: 3px; flex: none; border: 1.5px solid; }
 
-  .legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.1rem;
-    margin: 0 0 1.25rem;
-    padding: 0.85rem 1rem;
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    box-shadow: var(--shadow);
-  }
+  /* ================= DIAGRAM 1 — pipeline ================= */
+  .pipeline-scroll { overflow-x: auto; padding-bottom: 0.5rem; }
+  .pipeline { min-width: 900px; display: flex; flex-direction: column; }
 
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.45rem;
-    font-size: 0.8rem;
-    color: var(--ink-dim);
-  }
+  .stage { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 1rem 1.1rem 1.15rem; }
+  .stage-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.75rem; }
+  .stage-num { font-family: ui-monospace, monospace; font-size: 0.72rem; color: var(--bg-raised);
+    background: var(--ink); border-radius: 4px; padding: 0.12rem 0.4rem; }
+  .stage-title { font-family: ui-monospace, monospace; font-size: 0.86rem; font-weight: 600; }
+  .stage-desc { font-size: 0.78rem; color: var(--ink-dim); margin-left: auto; text-align: right; max-width: 42ch; }
 
-  .swatch {
-    width: 0.7rem;
-    height: 0.7rem;
-    border-radius: 2px;
-    flex: none;
-  }
+  .stage-row { display: flex; align-items: stretch; gap: 0; }
 
-  .diagram-wrap {
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    padding: 1.25rem;
-    overflow-x: auto;
-  }
+  .pconn { flex: none; width: 30px; display: flex; align-items: center; justify-content: center; color: var(--ink-dim); }
 
-  .diagram-wrap pre.mermaid {
-    margin: 0;
-    min-width: 720px;
-  }
+  .pnode { flex: none; width: 168px; border-radius: 10px; border: 1.5px solid var(--line);
+    background: var(--bg); padding: 0.55rem 0.6rem 0.6rem; display: flex; flex-direction: column; gap: 0.3rem; }
+  .pnode-type { display: flex; align-items: center; gap: 0.35rem; font-family: ui-monospace, monospace;
+    font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .pnode-title { font-size: 0.78rem; font-weight: 600; color: var(--ink); line-height: 1.25; }
+  .pnode-sub { font-size: 0.68rem; color: var(--ink-dim); line-height: 1.3; }
 
-  .notes {
-    margin-top: 1.5rem;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 0.9rem;
-  }
+  .pnode.t-api { border-color: var(--api); background: var(--api-soft); }
+  .pnode.t-api .pnode-type { color: var(--api); }
+  .pnode.t-fresh { border-color: var(--fresh); background: var(--fresh-soft); }
+  .pnode.t-fresh .pnode-type { color: var(--fresh); }
+  .pnode.t-immutable { border-color: var(--immutable); background: var(--immutable-soft); }
+  .pnode.t-immutable .pnode-type { color: var(--immutable); }
+  .pnode.t-merge { border-color: var(--merge); background: var(--merge-soft); }
+  .pnode.t-merge .pnode-type { color: var(--merge); }
+  .pnode.t-compute { border-color: var(--accent); background: var(--accent-soft); }
+  .pnode.t-compute .pnode-type { color: var(--accent); }
+  .pnode.t-neutral { border-color: var(--line); background: var(--bg-raised); }
+  .pnode.t-neutral .pnode-type { color: var(--ink-dim); }
 
-  .note {
-    background: var(--bg-raised);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent-line, var(--accent));
-    border-radius: 6px;
-    padding: 0.85rem 1rem;
-    font-size: 0.85rem;
-    color: var(--ink-dim);
-  }
+  .stage-drop { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0 0.5rem 1.4rem; color: var(--ink-dim); }
+  .stage-drop .line { width: 1.5px; height: 22px; background: var(--line); }
+  .stage-drop .note { font-size: 0.72rem; font-style: normal; }
 
-  .note strong {
-    display: block;
-    color: var(--ink);
-    font-size: 0.82rem;
-    margin-bottom: 0.25rem;
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
-  }
+  /* branch fork inside stage 2 */
+  .branch { display: flex; align-items: center; gap: 0.5rem; }
+  .diamond { width: 92px; height: 92px; flex: none; transform: rotate(45deg); border-radius: 10px;
+    border: 1.5px solid var(--immutable); background: var(--immutable-soft); display: flex;
+    align-items: center; justify-content: center; }
+  .diamond-inner { transform: rotate(-45deg); text-align: center; font-family: ui-monospace, monospace;
+    font-size: 0.68rem; color: var(--immutable); line-height: 1.2; padding: 0 0.3rem; }
 
-  .note code {
-    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
-    background: var(--code-bg);
-    padding: 0.1rem 0.35rem;
-    border-radius: 4px;
-    font-size: 0.82em;
-  }
+  .lanes { position: relative; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.8rem; margin-left: 0.4rem; }
+  .lanes::before { content: ""; position: absolute; left: 0; top: 12%; bottom: 12%; border-left: 2px solid var(--immutable); }
+  .lane { position: relative; display: flex; align-items: center; gap: 0.5rem; }
+  .lane::before { content: ""; position: absolute; left: -1.5rem; top: 50%; width: 1.5rem; border-top: 2px solid var(--immutable); }
+  .lane-tag { font-family: ui-monospace, monospace; font-size: 0.62rem; letter-spacing: 0.06em; color: var(--immutable);
+    background: var(--immutable-soft); border: 1px solid var(--immutable); border-radius: 4px; padding: 0.15rem 0.35rem; flex: none; }
 
+  /* ================= DIAGRAM 2 — relational ================= */
+  .rel-scroll { overflow-x: auto; }
+  .relational-canvas { position: relative; width: 960px; height: 760px; }
+  .relational-canvas svg.edges { position: absolute; inset: 0; width: 960px; height: 760px; }
+  .relational-canvas svg.edges path { fill: none; stroke-width: 2; }
+  .edge-label { position: absolute; transform: translate(-50%, -50%); background: var(--bg);
+    border: 1px solid var(--line); border-radius: 5px; padding: 0.15rem 0.4rem; font-size: 0.66rem;
+    color: var(--ink-dim); max-width: 190px; text-align: center; line-height: 1.25; font-family: ui-sans-serif, sans-serif; }
+
+  .rnode { position: absolute; border-radius: 12px; border: 1.5px solid var(--line); background: var(--bg-raised);
+    box-shadow: var(--shadow); padding: 0.7rem 0.85rem; display: flex; flex-direction: column; gap: 0.35rem; z-index: 2; }
+  .rnode-kind { display: flex; align-items: center; gap: 0.4rem; font-family: ui-monospace, monospace;
+    font-size: 0.62rem; letter-spacing: 0.06em; text-transform: uppercase; }
+  .rnode-title { font-family: ui-monospace, monospace; font-size: 0.83rem; font-weight: 600; color: var(--ink); }
+  .rnode-note { font-size: 0.72rem; color: var(--ink-dim); line-height: 1.3; }
+
+  .rnode.k-api { border-color: var(--api); }
+  .rnode.k-api .rnode-kind { color: var(--api); }
+  .rnode.k-fresh { border-color: var(--fresh); background: var(--fresh-soft); }
+  .rnode.k-fresh .rnode-kind { color: var(--fresh); }
+  .rnode.k-immutable { border-color: var(--immutable); background: var(--immutable-soft); }
+  .rnode.k-immutable .rnode-kind { color: var(--immutable); }
+  .rnode.k-merge { border-color: var(--merge); background: var(--merge-soft); }
+  .rnode.k-merge .rnode-kind { color: var(--merge); }
+
+  .rstack { position: absolute; border-radius: 12px; border: 1.5px solid var(--immutable); opacity: 0.35; z-index: 1; }
+
+  .col-label { position: absolute; top: -28px; font-family: ui-monospace, monospace; font-size: 0.68rem;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-dim); }
+
+  .notes { margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; }
+  .note { background: var(--bg-raised); border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    border-radius: 6px; padding: 0.8rem 0.95rem; font-size: 0.83rem; color: var(--ink-dim); }
+  .note strong { display: block; color: var(--ink); font-size: 0.8rem; margin-bottom: 0.25rem; font-family: ui-monospace, monospace; }
+  .note code { font-family: ui-monospace, monospace; background: var(--immutable-soft); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.82em; }
   .note.fresh { border-left-color: var(--fresh); }
   .note.immutable { border-left-color: var(--immutable); }
   .note.merge { border-left-color: var(--merge); }
 
-  footer {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 clamp(1.25rem, 4vw, 3rem) 3rem;
-    color: var(--ink-dim);
-    font-size: 0.78rem;
-  }
+  footer { max-width: 1180px; margin: 0 auto; padding: 0 clamp(1.25rem, 4vw, 3rem) 3rem; color: var(--ink-dim); font-size: 0.78rem; }
+  footer code { font-family: ui-monospace, monospace; }
 
-  footer code { font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace; }
-
-  @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
-  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
+
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="i-api" viewBox="0 0 24 24"><polygon points="3,7 14,7 14,3 21,12 14,21 14,17 3,17 3,13 12,13 12,11 3,11"/></symbol>
+    <symbol id="i-write" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><polygon points="8,10 16,10 12,16"/><line x1="12" y1="6" x2="12" y2="12"/></symbol>
+    <symbol id="i-read" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><polygon points="8,14 16,14 12,8"/><line x1="12" y1="18" x2="12" y2="12"/></symbol>
+    <symbol id="i-merge" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="1.5"/><circle cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="6"/></symbol>
+    <symbol id="i-compute" viewBox="0 0 24 24"><polygon points="12,2 22,12 12,22 2,12"/><circle cx="12" cy="12" r="2.4" fill="var(--bg)" stroke="none"/></symbol>
+    <symbol id="i-display" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></symbol>
+    <symbol id="i-shared" viewBox="0 0 24 24"><rect x="2" y="8" width="13" height="13" rx="1.5"/><rect x="6" y="4" width="13" height="13" rx="1.5"/><rect x="9" y="1" width="13" height="12" rx="1.5"/></symbol>
+    <symbol id="i-arrow-r" viewBox="0 0 20 20"><polygon points="4,3 4,17 17,10"/></symbol>
+    <symbol id="i-arrow-d" viewBox="0 0 20 20"><polygon points="3,4 17,4 10,17"/></symbol>
+  </defs>
+</svg>
 
 <header>
   <p class="eyebrow">pubg-teammate-analysis / local data map</p>
   <h1>What a single run reads, writes, and reuses</h1>
-  <p>Two views of the same system: which local files each API call feeds (or gets fed by), and the actual execution order inside a <code class="mono">python main.py &lt;playername&gt;</code> run.</p>
+  <p>Two hand-laid-out diagrams of the same system: the actual step-by-step pipeline inside <code class="mono">python main.py &lt;playername&gt;</code>, and how the API calls and local files connect to and reuse one another.</p>
 </header>
 
 <nav class="tabs">
-  <button class="tab-btn active" data-tab="relationships">Relationships</button>
-  <button class="tab-btn" data-tab="sequence">Execution order</button>
+  <button class="tab-btn active" data-tab="pipeline">Data flow (execution order)</button>
+  <button class="tab-btn" data-tab="relational">Relational view (files ↔ API)</button>
 </nav>
 
 <main>
-  <section class="panel active" id="relationships">
-    <h2>API calls &rarr; local files</h2>
-    <p class="lede">Nodes are either a live PUBG API call or a file this project writes. Edges show what produces or reads what. Color marks how each file behaves across repeated runs &mdash; that behavior is the whole reason the caching layer exists.</p>
+  <section class="panel active" id="pipeline">
+    <h2>main.py — pipeline, in order</h2>
+    <p class="lede">Four stages, left to right within a stage, top to bottom across stages. The only branch in the whole run is the telemetry cache check — everything else is a straight line.</p>
 
     <div class="legend">
-      <div class="legend-item"><span class="swatch" style="background:var(--fresh)"></span>re-fetched every run (overwritten)</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--immutable)"></span>write-once, immutable (cache-gated)</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--merge)"></span>merge-updated index (never deleted from)</div>
-      <div class="legend-item"><span class="swatch" style="background:var(--ink-dim)"></span>API endpoint (response not persisted as-is)</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--api)"><use href="#i-api"/></svg>API call</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--fresh)"><use href="#i-write"/></svg>file write · overwritten every run</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--immutable)"><use href="#i-write"/></svg>file write · write-once / immutable</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--merge)"><use href="#i-merge"/></svg>file write · merge-updated index</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--ink-dim)"><use href="#i-read"/></svg>file read</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--accent)"><use href="#i-compute"/></svg>computation</div>
+      <div class="legend-item"><svg class="icon" style="color:var(--ink-dim)"><use href="#i-display"/></svg>terminal display</div>
     </div>
 
-    <div class="diagram-wrap">
-<pre class="mermaid">
-flowchart LR
-    A1["GET /players?filter[playerNames]=name<br/>resolve account ID"]
-    A2["GET /players/{id}/seasons/lifetime"]
-    A3["GET /matches/{match_id}<br/>metadata, for CDN asset URL"]
-    A4["GET {telemetry CDN URL}<br/>raw telemetry payload"]
+    <div class="pipeline-scroll">
+      <div class="pipeline">
 
-    PS["playerstats/{name}.json"]
-    PI["player-index.json"]
-    TM["match-telemetry/{match_id}-telemetry.json<br/>(shared across every player)"]
-    BI["bot-index.json"]
+        <!-- STAGE 1 -->
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-num">01</span>
+            <span class="stage-title">Identity &amp; stats</span>
+            <span class="stage-desc">Resolve the player, refresh their lifetime stats unconditionally.</span>
+          </div>
+          <div class="stage-row">
+            <div class="pnode t-api">
+              <div class="pnode-type"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+              <div class="pnode-title">GET /players?filter[playerNames]</div>
+              <div class="pnode-sub">resolve account ID</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-merge">
+              <div class="pnode-type"><svg class="icon"><use href="#i-merge"/></svg>write · merge</div>
+              <div class="pnode-title">player-index.json</div>
+              <div class="pnode-sub">create or update entry</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-api">
+              <div class="pnode-type"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+              <div class="pnode-title">GET /seasons/lifetime</div>
+              <div class="pnode-sub">using player_id from step 1</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-fresh">
+              <div class="pnode-type"><svg class="icon"><use href="#i-write"/></svg>write · overwrite</div>
+              <div class="pnode-title">playerstats/{name}.json</div>
+              <div class="pnode-sub">full response, every run</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-neutral">
+              <div class="pnode-type"><svg class="icon"><use href="#i-display"/></svg>display</div>
+              <div class="pnode-title">stats table + match history</div>
+              <div class="pnode-sub">rendered to terminal</div>
+            </div>
+          </div>
+        </div>
 
-    A1 -->|player_id, response discarded| PI
-    A1 -->|player_id feeds next call| A2
-    A2 -->|full response saved| PS
-    PS -->|this player's match_ids, from relationships| TM
-    TM -.->|_is_cached? miss triggers| A3
-    A3 -->|asset URL, response discarded| A4
-    A4 -->|full payload saved| TM
-    TM -->|detect_bots on latest cached match| BI
+        <div class="stage-drop"><div class="line"></div><svg class="icon"><use href="#i-arrow-d"/></svg><span class="note">match_ids extracted from this player's own stats relationships</span></div>
 
-    class A1,A2,A3,A4 api
-    class PS fresh
-    class TM immutable
-    class PI,BI merge
+        <!-- STAGE 2 -->
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-num">02</span>
+            <span class="stage-title">Telemetry ingestion</span>
+            <span class="stage-desc">The one branch in the run — gated by <code class="mono">_is_cached()</code> per match_id.</span>
+          </div>
+          <div class="branch">
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">extract match_ids</div>
+              <div class="pnode-sub">from playerstats relationships</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="diamond"><div class="diamond-inner">cached<br/>on disk?</div></div>
+            <div class="lanes">
+              <div class="lane">
+                <span class="lane-tag">HIT</span>
+                <div class="pnode t-neutral" style="width:150px">
+                  <div class="pnode-type" style="color:var(--ink-dim)"><svg class="icon"><use href="#i-read"/></svg>skip</div>
+                  <div class="pnode-title">already on disk</div>
+                  <div class="pnode-sub">no network call at all</div>
+                </div>
+              </div>
+              <div class="lane">
+                <span class="lane-tag">MISS</span>
+                <div class="pnode t-api">
+                  <div class="pnode-type"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+                  <div class="pnode-title">GET /matches/{id}</div>
+                  <div class="pnode-sub">metadata, for asset URL</div>
+                </div>
+                <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+                <div class="pnode t-api">
+                  <div class="pnode-type"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+                  <div class="pnode-title">GET {telemetry CDN URL}</div>
+                  <div class="pnode-sub">raw telemetry payload</div>
+                </div>
+                <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+                <div class="pnode t-immutable">
+                  <div class="pnode-type"><svg class="icon"><use href="#i-write"/></svg>write · once</div>
+                  <div class="pnode-title">{id}-telemetry.json</div>
+                  <div class="pnode-sub">never rewritten again</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-    classDef api fill:#dfe3de,stroke:#58635e,color:#1b2321,stroke-width:1px;
-    classDef fresh fill:#dbe7f5,stroke:#2f6fa8,color:#122236;
-    classDef immutable fill:#f3e2bb,stroke:#a9782c,color:#3b2a0c;
-    classDef merge fill:#e4dcf4,stroke:#6f5aa3,color:#251c3d;
-</pre>
+        <div class="stage-drop"><div class="line"></div><svg class="icon"><use href="#i-arrow-d"/></svg><span class="note">cache now covers every match this player is known to have played</span></div>
+
+        <!-- STAGE 3 -->
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-num">03</span>
+            <span class="stage-title">Analysis, from cache only</span>
+            <span class="stage-desc">No further network calls — everything below reads telemetry back off disk.</span>
+          </div>
+          <div class="stage-row">
+            <div class="pnode t-neutral">
+              <div class="pnode-type" style="color:var(--ink-dim)"><svg class="icon"><use href="#i-read"/></svg>read</div>
+              <div class="pnode-title">telemetry cache</div>
+              <div class="pnode-sub">this player's match_ids</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">combat stats</div>
+              <div class="pnode-sub">computed + rendered</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">select_scoped_match_ids</div>
+              <div class="pnode-sub">recency window / cap — computed once</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">Archetype Tag</div>
+              <div class="pnode-sub">tempo + range + weapon signature, rendered</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">Headline Number</div>
+              <div class="pnode-sub">same scoped set, rendered</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-drop"><div class="line"></div><svg class="icon"><use href="#i-arrow-d"/></svg><span class="note">last-match + bot detection are independent lookups against the cache</span></div>
+
+        <!-- STAGE 4 -->
+        <div class="stage">
+          <div class="stage-head">
+            <span class="stage-num">04</span>
+            <span class="stage-title">Last match &amp; bot detection</span>
+            <span class="stage-desc">Two different scopes: this player's cache vs. the entire shared cache.</span>
+          </div>
+          <div class="stage-row">
+            <div class="pnode t-neutral">
+              <div class="pnode-type" style="color:var(--ink-dim)"><svg class="icon"><use href="#i-read"/></svg>read</div>
+              <div class="pnode-title">this player's latest match</div>
+              <div class="pnode-sub">player-scoped lookup</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">last-match brief</div>
+              <div class="pnode-sub">squad status at death, rendered</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-neutral">
+              <div class="pnode-type" style="color:var(--ink-dim)"><svg class="icon"><use href="#i-read"/></svg>read</div>
+              <div class="pnode-title">latest match, whole cache</div>
+              <div class="pnode-sub">not player-scoped, by design</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-compute">
+              <div class="pnode-type"><svg class="icon"><use href="#i-compute"/></svg>compute</div>
+              <div class="pnode-title">detect_bots</div>
+              <div class="pnode-sub">on that match's events</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-merge">
+              <div class="pnode-type"><svg class="icon"><use href="#i-merge"/></svg>write · merge</div>
+              <div class="pnode-title">bot-index.json</div>
+              <div class="pnode-sub">records never deleted</div>
+            </div>
+            <div class="pconn"><svg class="icon" style="width:18px;height:18px"><use href="#i-arrow-r"/></svg></div>
+            <div class="pnode t-neutral">
+              <div class="pnode-type"><svg class="icon"><use href="#i-display"/></svg>display</div>
+              <div class="pnode-title">bot summary</div>
+              <div class="pnode-sub">rendered to terminal</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="relational">
+    <h2>API calls ↔ local files</h2>
+    <p class="lede">Nodes are positioned by role — API calls on the left, files on the right — with drawn connectors showing exactly what produces or reuses what. Node color is the mutability class itself, not a separate key.</p>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:var(--fresh-soft);border-color:var(--fresh)"></span>overwritten every run</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--immutable-soft);border-color:var(--immutable)"></span>write-once, immutable, shared</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--merge-soft);border-color:var(--merge)"></span>merge-updated index</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--api-soft);border-color:var(--api)"></span>API endpoint (nothing persisted as-is)</div>
+    </div>
+
+    <div class="rel-scroll">
+      <div class="relational-canvas">
+        <span class="col-label" style="left:30px">PUBG API</span>
+        <span class="col-label" style="left:680px">local files</span>
+
+        <svg class="edges" viewBox="0 0 960 760">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 Z"/>
+            </marker>
+          </defs>
+          <path d="M280,80 C430,80 530,75 680,75" stroke="var(--merge)" marker-end="url(#arrow)"/>
+          <path d="M155,130 L155,170" stroke="var(--api)" marker-end="url(#arrow)"/>
+          <path d="M280,220 C430,220 530,215 680,215" stroke="var(--fresh)" marker-end="url(#arrow)"/>
+          <path d="M805,260 C805,320 805,370 805,430" stroke="var(--immutable)" marker-end="url(#arrow)"/>
+          <path d="M680,480 C550,480 410,480 280,480" stroke="var(--immutable)" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+          <path d="M155,530 L155,560" stroke="var(--api)" marker-end="url(#arrow)"/>
+          <path d="M280,610 C430,610 530,580 680,560" stroke="var(--immutable)" marker-end="url(#arrow)"/>
+          <path d="M805,600 C805,615 805,625 805,640" stroke="var(--merge)" marker-end="url(#arrow)"/>
+        </svg>
+
+        <div class="edge-label" style="left:480px; top:52px;">player_id, response discarded</div>
+        <div class="edge-label" style="left:480px; top:198px;">full response saved</div>
+        <div class="edge-label" style="left:850px; top:340px;">this player's match_ids trigger fetch</div>
+        <div class="edge-label" style="left:480px; top:462px;">cache miss → triggers metadata call</div>
+        <div class="edge-label" style="left:480px; top:592px;">full payload saved, write-once</div>
+        <div class="edge-label" style="left:850px; top:618px;">bots detected in that match</div>
+
+        <!-- shared-cache stack effect behind match-telemetry -->
+        <div class="rstack" style="left:696px; top:446px; width:250px; height:170px;"></div>
+        <div class="rstack" style="left:688px; top:438px; width:250px; height:170px;"></div>
+
+        <div class="rnode k-api" style="left:30px; top:30px; width:250px; height:100px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+          <div class="rnode-title">GET /players?filter[playerNames]</div>
+          <div class="rnode-note">Resolves account ID. Called once per run.</div>
+        </div>
+
+        <div class="rnode k-api" style="left:30px; top:170px; width:250px; height:100px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+          <div class="rnode-title">GET /seasons/lifetime</div>
+          <div class="rnode-note">Full lifetime stats for this player_id.</div>
+        </div>
+
+        <div class="rnode k-api" style="left:30px; top:430px; width:250px; height:100px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+          <div class="rnode-title">GET /matches/{match_id}</div>
+          <div class="rnode-note">Metadata only, to extract the CDN asset URL. Skipped entirely if telemetry is already cached.</div>
+        </div>
+
+        <div class="rnode k-api" style="left:30px; top:560px; width:250px; height:100px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-api"/></svg>API call</div>
+          <div class="rnode-title">GET {telemetry CDN URL}</div>
+          <div class="rnode-note">The actual telemetry payload, fetched from the CDN, not the PUBG API host.</div>
+        </div>
+
+        <div class="rnode k-merge" style="left:680px; top:30px; width:250px; height:90px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-merge"/></svg>merge-updated</div>
+          <div class="rnode-title">player-index.json</div>
+          <div class="rnode-note">account_id → playername, last_seen, stats_file.</div>
+        </div>
+
+        <div class="rnode k-fresh" style="left:680px; top:170px; width:250px; height:90px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-write"/></svg>overwritten every run</div>
+          <div class="rnode-title">playerstats/{name}.json</div>
+          <div class="rnode-note">No cache check — always re-fetched fresh.</div>
+        </div>
+
+        <div class="rnode k-immutable" style="left:680px; top:430px; width:250px; height:170px; z-index:2;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-shared"/></svg>write-once · shared</div>
+          <div class="rnode-title">match-telemetry/{match_id}-telemetry.json</div>
+          <div class="rnode-note">Keyed by match_id only. A match cached from looking up one player is reused automatically for any other player who shares it — one file can back many players' analyses.</div>
+        </div>
+
+        <div class="rnode k-merge" style="left:680px; top:640px; width:250px; height:90px;">
+          <div class="rnode-kind"><svg class="icon"><use href="#i-merge"/></svg>merge-updated</div>
+          <div class="rnode-title">bot-index.json</div>
+          <div class="rnode-note">matches_seen grows, records never removed.</div>
+        </div>
+      </div>
     </div>
 
     <div class="notes">
       <div class="note fresh">
         <strong>playerstats/{name}.json</strong>
-        Overwritten in full on every run &mdash; no cache check. Lifetime stats change as the player plays more, so staleness isn't acceptable here.
+        Full response saved in full on every run &mdash; lifetime stats change as the player plays more, so staleness isn't acceptable here.
       </div>
       <div class="note immutable">
-        <strong>match-telemetry/{match_id}-telemetry.json</strong>
-        <code>_is_cached()</code> checks <code>os.path.exists()</code> before either the metadata call or the CDN fetch even fire. Keyed by match_id only, so a match cached from one player's lookup is silently reused for any other player who shares it.
+        <strong>match-telemetry is the shared layer</strong>
+        <code>_is_cached()</code> gates both API calls above it. Because the key is match_id, not player, one fetch backs every player who shares that match.
       </div>
       <div class="note merge">
-        <strong>player-index.json / bot-index.json</strong>
-        Not their own API call &mdash; built from data already in flight. Loaded, updated in place, and rewritten whole; existing entries get fields refreshed, records are never removed.
-      </div>
-      <div class="note">
-        <strong>Endpoints that leave no trace</strong>
-        The <code>/players</code> lookup and the per-match <code>/matches/{id}</code> metadata call are both used only in-memory &mdash; one for an account ID, the other for a CDN URL &mdash; and neither response is written to disk.
-      </div>
-    </div>
-  </section>
-
-  <section class="panel" id="sequence">
-    <h2>main.py &mdash; real execution order</h2>
-    <p class="lede">One straight run for one player. The telemetry fetch loop only touches the network for matches missing from the shared cache; every analysis step after it reads that cache back off disk rather than re-deriving from the API responses.</p>
-
-    <div class="diagram-wrap">
-<pre class="mermaid">
-sequenceDiagram
-    participant U as you (CLI)
-    participant M as main.py
-    participant API as PUBG API
-    participant PI as player-index.json
-    participant PS as playerstats/{name}.json
-    participant TC as match-telemetry/ cache
-    participant BI as bot-index.json
-
-    U->>M: python main.py <playername>
-    M->>API: GET /players?filter[playerNames]=
-    API-->>M: player_id
-    M->>PI: update_player_index (create/merge)
-    M->>API: GET /players/{id}/seasons/lifetime
-    API-->>M: lifetime stats
-    M->>PS: save_json (overwrite)
-    M->>M: render stats table + match history
-
-    M->>M: extract this player's match_ids from relationships
-    loop each match_id
-        M->>TC: cached?
-        alt not cached
-            M->>API: GET /matches/{id} (metadata)
-            API-->>M: telemetry CDN URL
-            M->>API: GET {telemetry CDN URL}
-            API-->>M: telemetry payload
-            M->>TC: save {id}-telemetry.json (write-once)
-        else cached
-            TC-->>M: skip fetch
-        end
-    end
-
-    M->>TC: read telemetry for this player's match_ids
-    M->>M: compute + render combat stats
-    M->>M: select_scoped_match_ids (recency window/cap)
-    M->>TC: read telemetry for scoped match_ids
-    M->>M: compute + render Archetype Tag (tempo + range + weapon signature)
-    M->>M: compute + render Headline Number
-    M->>TC: find this player's most recent cached match
-    M->>M: compute + render last-match brief
-    M->>TC: find latest match in the ENTIRE shared cache (not player-scoped)
-    M->>M: detect_bots on that match
-    M->>BI: update_bot_index (merge)
-    M->>M: render bot summary
-</pre>
-    </div>
-
-    <div class="notes">
-      <div class="note merge">
-        <strong>player-index write lands early</strong>
-        <code>update_player_index</code> runs right after the account-ID lookup, before the lifetime-stats call even goes out &mdash; the index only needs the ID and the searched name, not the stats payload.
-      </div>
-      <div class="note">
-        <strong>Two different "latest match" queries</strong>
-        The last-match brief looks up this player's own most recent cached match. Bot detection deliberately looks up the most recent match across the whole shared cache &mdash; a stand-in for "your" last match until self-identity detection lands.
-      </div>
-      <div class="note">
-        <strong>Scoped set is computed once, reused twice</strong>
-        <code>select_scoped_match_ids</code> runs a single time; both the Archetype Tag and the Headline Number read from that same recency-windowed set instead of each rescanning the full telemetry cache independently.
+        <strong>Indexes aren't their own API call</strong>
+        player-index.json and bot-index.json are built from data already in flight elsewhere &mdash; loaded, updated in place, rewritten whole.
       </div>
     </div>
   </section>
