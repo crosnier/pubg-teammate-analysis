@@ -16,6 +16,9 @@ from utils.last_match_brief import find_latest_match_for_player, compute_last_ma
 from utils.display_last_match_brief import render_last_match_brief
 from utils.archetype_tag import compute_archetype_tag
 from utils.display_archetype_tag import render_archetype_tag
+from utils.headline_number import compute_headline_number
+from utils.display_headline_number import render_headline_number
+from utils.match_scope import select_scoped_match_ids
 import asyncio
 
 
@@ -59,10 +62,20 @@ async def _run(playername):
     combat_stats = compute_combat_stats(player_id)
     render_combat_stats(combat_stats)
 
+    # Resolve the player's scoped match set once and reuse it across both
+    # signal computations below, rather than each one independently
+    # rescanning the full shared telemetry cache.
+    scoped_match_ids = set(select_scoped_match_ids(player_id))
+
     # Display Archetype Tag (tempo + range + weapon signature) mined from cached telemetry
     print("\n\n")
-    archetype = compute_archetype_tag(player_id)
+    archetype = compute_archetype_tag(player_id, match_ids=scoped_match_ids)
     render_archetype_tag(archetype)
+
+    # Display the Headline Number: one differentiating, confidence-gated stat
+    print("\n\n")
+    headline = compute_headline_number(player_id, match_ids=scoped_match_ids)
+    render_headline_number(headline)
 
     # Last Match section: brief for this player, then bot detection for
     # whichever cached match is most recent overall (a stand-in for "your"

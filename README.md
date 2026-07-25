@@ -92,14 +92,17 @@ main.py
  │     ├─ time-to-first-contact tempo bucket       → utils/tempo_signal.py
  │     ├─ median kill-distance range bucket        → utils/range_signal.py
  │     └─ weapon-class preference / Wildcard       → utils/weapon_signature.py
+ ├──▶ Headline Number: confidence-gated "so-what"  → utils/headline_number.py
  ├──▶ Last match brief for this player             → utils/last_match_brief.py
  └──▶ Bot detection for the most recent match       → utils/bot_detection.py
 ```
 
-Archetype Tag scopes each player to their own recent matches (see
-`utils/match_scope.py`) - a widening 30-90 day recency window, capped at a
-configurable match count - rather than scanning every cached match, since
-telemetry caching is shared across all players ever looked up.
+Archetype Tag and the Headline Number both scope each player to their own
+recent matches (see `utils/match_scope.py`) - a widening 30-90 day recency
+window, capped at a configurable match count - rather than scanning every
+cached match, since telemetry caching is shared across all players ever
+looked up. `main.py` resolves this scoped match set once per run and
+reuses it across both, rather than each rescanning the cache separately.
 
 ## Project Structure
 

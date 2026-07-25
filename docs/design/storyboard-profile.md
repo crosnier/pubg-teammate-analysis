@@ -11,7 +11,7 @@ post-match coaching actually values.
 
 - [x] Archetype Tag (headline label: range + tempo + signature weapon) - see `utils/archetype_tag.py`; presented as plain tempo/range/weapon fields plus a short `Range/Temperament` tag rather than an invented flavor-text headline
 - [ ] Map Drop Zone + Flow (primary + secondary landing region, per-region flow)
-- [ ] The Headline Number (one differentiating, confidence-gated stat)
+- [x] The Headline Number (one differentiating, confidence-gated stat) - see `utils/headline_number.py`
 - [x] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern) - see `utils/weapon_signature.py`
 - [ ] Last Match Snapshot (extends #13, adds squad-status-at-death)
 - [ ] Squad Read (synergy/gap line, bolstered when high-confidence)
@@ -432,3 +432,21 @@ top-30 ranked PC-NA leaderboard players) - see `utils/tempo_signal.py` and
 implemented in `utils/match_scope.py`, currently set low (50 matches)
 pending a dedicated performance pass, not yet the intended production
 default (250).
+
+Resolved: The Headline Number's candidate pool, eligibility gate,
+stability check, and scoring are implemented in `utils/headline_number.py`.
+Five candidates cover the PEPS+ categories the doc calls out (Firepower,
+Finishing, Combat Distance, plus a team-support read via revives): avg
+kills before first death, close-range fight win rate, knockdown-to-kill
+conversion rate, revives per match, damage per match. Eligibility requires
+`MIN_MATCHES_FOR_CANDIDATE = 8` matches of underlying data, matching the
+threshold used across the other Archetype Tag signals. Stability is a
+chronological first-half/second-half check requiring the same direction
+of deviation from a neutral reference in both halves, with neither half's
+deviation dwarfing the other's. Scoring uses two standard, self-relative
+statistical tests rather than one blended formula, since a single formula
+turned out to blow up for count-type stats at large magnitudes: rate-type
+candidates (win rate, conversion rate) use a one-sample z-test for a
+proportion against a neutral 50/50 split; magnitude-type candidates
+(kills, revives, damage) use a one-sample t-statistic against a neutral
+zero. Falls back to a plain kill count when nothing clears the bar.
