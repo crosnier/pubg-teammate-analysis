@@ -160,10 +160,13 @@ def format_engagement_lead(stats, teammate_name):
     if stats is None:
         return None
     if stats["leader"] == "self":
-        return f"High confidence: you've opened the first engagement in {stats['count']} of your last {stats['window']} shared matches."
+        return (
+            f"High confidence: You tend to push first - you've opened the first engagement "
+            f"in {stats['count']} of your last {stats['window']} shared matches."
+        )
     return (
-        f"High confidence: {teammate_name} has opened the first engagement in {stats['count']} of your last "
-        f"{stats['window']} shared matches - expect {teammate_name} to push first."
+        f"High confidence: Expect {teammate_name} to push first - {teammate_name} has opened "
+        f"the first engagement in {stats['count']} of your last {stats['window']} shared matches."
     )
 
 

@@ -57,7 +57,7 @@ class TestComputeSquadCoverageSummary(unittest.TestCase):
         result = compute_squad_coverage_summary(members)
 
         self.assertIn("Balanced squad", result)
-        self.assertIn("you (support anchor)", result)
+        self.assertIn("You (support anchor)", result)
         self.assertIn("DanucD (entry fragger)", result)
         self.assertIn("Vacency cover", result)
         self.assertIn("No overlapping blind spots.", result)
@@ -70,6 +70,19 @@ class TestComputeSquadCoverageSummary(unittest.TestCase):
         result = compute_squad_coverage_summary(members)
 
         self.assertIn("All-Aggressive squad", result)
+
+    def test_mixed_temperament_squad_uses_mixed_opener_not_generic_squad(self):
+        # Aggressive + Balanced (no Passive) doesn't fit "Balanced squad"
+        # (needs Aggressive+Passive) or "All-X squad" (needs one temperament) -
+        # falls to the generic case, which should read "Mixed squad", not the
+        # bare word "Squad" that collided with the "Squad Read:" print prefix.
+        members = [
+            member("You", ME, "Close-Range", "Aggressive"),
+            member("Mate", MATE_A, "Mid-Range", "Balanced"),
+        ]
+        result = compute_squad_coverage_summary(members)
+
+        self.assertIn("Mixed squad", result)
 
     def test_flags_missing_range_coverage(self):
         members = [
@@ -87,7 +100,7 @@ class TestComputeSquadCoverageSummary(unittest.TestCase):
         ]
         result = compute_squad_coverage_summary(members)
 
-        self.assertIn("you and Mate cover close-to-long", result)
+        self.assertIn("You and Mate cover close-to-long", result)
 
 
 class TestComputeBestEngagementLead(unittest.TestCase):

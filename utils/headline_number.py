@@ -208,7 +208,7 @@ def _score_magnitude(ordered_values):
     return mean / standard_error
 
 
-def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR):
+def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR, possessive="your"):
     """Pick the single most differentiating, confidence-gated stat.
 
     Evaluates a fixed pool of candidates, keeps only those with enough
@@ -216,6 +216,10 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
     whichever eligible candidate scores highest. Falls back to a plain
     kill count if nothing clears the bar, rather than force a shaky
     "notable" stat onto a small or noisy sample.
+
+    possessive: pronoun used in the rendered sentence ("your" for the
+    CLI's own user in main.py, "their" when squad.py renders a
+    teammate's card).
     """
     magnitude_readings = {"kills_before_death": [], "revives": [], "damage": []}
     rate_readings = {"close_range_win": [], "knockdown_conversion": []}
@@ -252,7 +256,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "score": _score_magnitude(values),
                 "sentence": (
                     f"Averages {statistics.mean(values):.1f} kills before first death "
-                    f"over your last {matches_analyzed} matches"
+                    f"over {possessive} last {matches_analyzed} matches"
                 ),
             })
 
@@ -262,7 +266,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "key": "revives",
                 "score": _score_magnitude(values),
                 "sentence": (
-                    f"Averages {statistics.mean(values):.1f} revives per match over your "
+                    f"Averages {statistics.mean(values):.1f} revives per match over {possessive} "
                     f"last {matches_analyzed} matches"
                 ),
             })
@@ -273,7 +277,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "key": "damage",
                 "score": _score_magnitude(values),
                 "sentence": (
-                    f"Averages {statistics.mean(values):.0f} damage per match over your "
+                    f"Averages {statistics.mean(values):.0f} damage per match over {possessive} "
                     f"last {matches_analyzed} matches"
                 ),
             })
@@ -288,7 +292,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "sentence": (
                     f"Wins {statistics.mean(values):.0%} of close-range fights "
                     f"(inside {CLOSE_RANGE_MAX_METERS}m) - {wins}/{len(values)} across "
-                    f"your last {matches_with_close_range} matches"
+                    f"{possessive} last {matches_with_close_range} matches"
                 ),
             })
 
@@ -301,7 +305,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "score": _score_rate(values),
                 "sentence": (
                     f"Converts {statistics.mean(values):.0%} of knockdowns into kills - "
-                    f"{converted}/{len(values)} over your last {matches_with_knockdowns} matches"
+                    f"{converted}/{len(values)} over {possessive} last {matches_with_knockdowns} matches"
                 ),
             })
 
@@ -315,7 +319,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
         }
 
     return {
-        "headline": f"{total_kills} kills over your last {matches_analyzed} matches"
+        "headline": f"{total_kills} kills over {possessive} last {matches_analyzed} matches"
         if matches_analyzed else "Not enough data yet",
         "stat_key": "fallback_kill_count",
         "score": None,
