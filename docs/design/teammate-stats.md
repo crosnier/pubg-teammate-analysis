@@ -1,12 +1,18 @@
 # Teammate Stats
 
-## **Features**  
-- [ ] Data Query + manually enter target player
-- [ ] Player Stats by Game Mode  
-- [ ] Player Match History
+**Status: implemented.** This was the original design spec for the CLI's
+foundational stats/history/combat display and predates the Archetype Tag /
+Squad Read work in `docs/design/storyboard-profile.md`. Kept as a
+historical record of the original requirements; the ASCII formatting
+below still matches current output.
 
-- [ ] list of 'players killed' with count
-- [ ] list of 'killed by players' with count
+## **Features**  
+- [x] Data Query + manually enter target player - `main.py`, `squad.py`
+- [x] Player Stats by Game Mode - `utils/display_stats_by_mode.py`
+- [x] Player Match History - `utils/display_match_history.py`
+
+- [x] list of 'players killed' with count - `utils/combat_stats.py`
+- [x] list of 'killed by players' with count - `utils/combat_stats.py`
 
 ---
 

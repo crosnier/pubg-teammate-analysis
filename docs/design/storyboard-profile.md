@@ -14,7 +14,7 @@ post-match coaching actually values.
 - [x] The Headline Number (one differentiating, confidence-gated stat) - see `utils/headline_number.py`
 - [x] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern) - see `utils/weapon_signature.py`
 - [x] Last Match Snapshot (extends #13, adds squad-status-at-death) - see `utils/last_match_brief.py`'s `_compute_squad_status_at_death`
-- [x] Squad Read (synergy/gap line, bolstered when high-confidence) - see `utils/squad_read.py`; compute module only, not yet wired into a multi-player CLI flow (see the Resolved note below)
+- [x] Squad Read (synergy/gap line, bolstered when high-confidence) - see `utils/squad_read.py`; exercised via `squad.py` (through `utils/squad_roster.py`'s N-player path even for a 2-person squad, rather than `squad_read.py`'s own `compute_squad_read` entry point being called directly)
 - [x] Squad Roster summary view (Squads mode, 2+ teammates) - see `utils/squad_roster.py` and `squad.py` (new multi-player entry point)
 - [ ] Mode 2: After-Action Report (conceptual scope only)
 - [ ] Solo mode variant (conceptual scope only)

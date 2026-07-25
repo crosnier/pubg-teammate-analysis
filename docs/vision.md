@@ -45,13 +45,14 @@ teammate, not just judge their K/D.
 The current CLI is the foundation, not the end state. Rough phases, in
 order:
 
-1. **Stats & telemetry foundation** (current) - query, cache, and display
+1. **Stats & telemetry foundation** (done) - query, cache, and display
    player stats and match history from the CLI.
-2. **Match-level insight** - mine telemetry for behavioral signal (drop
-   zones, weapon usage, engagement patterns, bot detection, and more) instead
-   of just raw stat totals. The specific signals worth extracting are still
-   an open question - expect this list to mature as prototyping against real
-   telemetry surfaces better, more "wow factor" storyboards.
+2. **Match-level insight** (current) - mine telemetry for behavioral signal
+   instead of just raw stat totals. Mode 1 (pre-game round-start intel) is
+   built: Archetype Tag, Weapon Signature, the Headline Number, Last Match
+   Snapshot, Squad Read, and Squad Roster, covering a single player through
+   a full squad. Mode 2 (after-action, opponent/self-improvement framing)
+   and the map drop-zone/flow slot are still ahead.
 3. **Automatic squad detection** - recognize when a new round has loaded and
    identify teammates from on-screen player names, without manual input.
 4. **Delivery surface** - move profile output from console text to a web

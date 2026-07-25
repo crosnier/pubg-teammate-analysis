@@ -16,7 +16,8 @@ waiting (see `test_rate_limiter.py`).
 
 Examples: `test_combat_stats.py`, `test_display_stats_by_mode.py`,
 `test_display_match_history.py`, `test_player_index.py`,
-`test_telemetry_fetcher.py`.
+`test_telemetry_fetcher.py`, `test_archetype_tag.py`,
+`test_headline_number.py`, `test_squad_read.py`, `test_squad_roster.py`.
 
 ## Integration tests (mocked, narrow set)
 
@@ -56,8 +57,8 @@ duplicate tests found. Gaps filled in this pass: `normalize_filename`
 previously exercised only by manual runs.
 
 While auditing `format_number`, found that the `"Time Survived (min)"` row
-doesn't convert seconds to minutes like the other two survival-time rows do
-- the case-sensitive substring check (`"TimeSurvived"` vs. the actual key
-`"timeSurvived"`) doesn't match. Documented in
-`test_display_stats_by_mode.py`, tracked as a separate bug rather than
-fixed here.
+didn't convert seconds to minutes like the other two survival-time rows -
+the case-sensitive substring check (`"TimeSurvived"` vs. the actual key
+`"timeSurvived"`) didn't match. Fixed in #19 (`display_stats_by_mode.py`
+now does a case-insensitive check); `test_display_stats_by_mode.py`
+asserts the fix directly.
