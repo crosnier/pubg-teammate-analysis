@@ -1,0 +1,426 @@
+<title>pubg-teammate-analysis — local data map</title>
+<style>
+  :root {
+    --bg: #f4f5f3;
+    --bg-raised: #ffffff;
+    --ink: #1b2321;
+    --ink-dim: #58635e;
+    --line: #d4d9d3;
+    --accent: #2f7d70;
+    --accent-ink: #ffffff;
+    --fresh: #2f6fa8;
+    --fresh-soft: #e4edf6;
+    --immutable: #a9782c;
+    --immutable-soft: #f6ecd7;
+    --merge: #6f5aa3;
+    --merge-soft: #ece7f6;
+    --derived: #58635e;
+    --code-bg: #e9ece7;
+    --shadow: 0 1px 2px rgba(20, 30, 25, 0.06), 0 8px 24px rgba(20, 30, 25, 0.05);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #121613;
+    --bg-raised: #181e1a;
+    --ink: #e7ece7;
+    --ink-dim: #93a19a;
+    --line: #2a322c;
+    --accent: #5fbfae;
+    --accent-ink: #0b1512;
+    --fresh: #7fb3e0;
+    --fresh-soft: #1c2a36;
+    --immutable: #e0b262;
+    --immutable-soft: #332a17;
+    --merge: #b6a4e6;
+    --merge-soft: #241f36;
+    --derived: #93a19a;
+    --code-bg: #1e2521;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px rgba(0, 0, 0, 0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121613;
+      --bg-raised: #181e1a;
+      --ink: #e7ece7;
+      --ink-dim: #93a19a;
+      --line: #2a322c;
+      --accent: #5fbfae;
+      --accent-ink: #0b1512;
+      --fresh: #7fb3e0;
+      --fresh-soft: #1c2a36;
+      --immutable: #e0b262;
+      --immutable-soft: #332a17;
+      --merge: #b6a4e6;
+      --merge-soft: #241f36;
+      --derived: #93a19a;
+      --code-bg: #1e2521;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  header {
+    padding: 2.25rem clamp(1.25rem, 4vw, 3rem) 1.25rem;
+    border-bottom: 1px solid var(--line);
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+    font-weight: 600;
+    margin: 0 0 0.5rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+
+  header p {
+    max-width: 62ch;
+    color: var(--ink-dim);
+    margin: 0;
+    font-size: 0.96rem;
+  }
+
+  nav.tabs {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 1rem clamp(1.25rem, 4vw, 3rem) 0;
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 5;
+  }
+
+  .tab-btn {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    background: transparent;
+    border: none;
+    color: var(--ink-dim);
+    padding: 0.65rem 0.9rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+
+  .tab-btn:hover { color: var(--ink); }
+
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .tab-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 1.75rem clamp(1.25rem, 4vw, 3rem) 4rem;
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .panel h2 {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 0 0 0.35rem;
+  }
+
+  .panel > p.lede {
+    color: var(--ink-dim);
+    max-width: 68ch;
+    margin: 0 0 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
+    margin: 0 0 1.25rem;
+    padding: 0.85rem 1rem;
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--ink-dim);
+  }
+
+  .swatch {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 2px;
+    flex: none;
+  }
+
+  .diagram-wrap {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    padding: 1.25rem;
+    overflow-x: auto;
+  }
+
+  .diagram-wrap pre.mermaid {
+    margin: 0;
+    min-width: 720px;
+  }
+
+  .notes {
+    margin-top: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 0.9rem;
+  }
+
+  .note {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent-line, var(--accent));
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+  }
+
+  .note strong {
+    display: block;
+    color: var(--ink);
+    font-size: 0.82rem;
+    margin-bottom: 0.25rem;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  .note code {
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+    background: var(--code-bg);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    font-size: 0.82em;
+  }
+
+  .note.fresh { border-left-color: var(--fresh); }
+  .note.immutable { border-left-color: var(--immutable); }
+  .note.merge { border-left-color: var(--merge); }
+
+  footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 clamp(1.25rem, 4vw, 3rem) 3rem;
+    color: var(--ink-dim);
+    font-size: 0.78rem;
+  }
+
+  footer code { font-family: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<header>
+  <p class="eyebrow">pubg-teammate-analysis / local data map</p>
+  <h1>What a single run reads, writes, and reuses</h1>
+  <p>Two views of the same system: which local files each API call feeds (or gets fed by), and the actual execution order inside a <code class="mono">python main.py &lt;playername&gt;</code> run.</p>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="relationships">Relationships</button>
+  <button class="tab-btn" data-tab="sequence">Execution order</button>
+</nav>
+
+<main>
+  <section class="panel active" id="relationships">
+    <h2>API calls &rarr; local files</h2>
+    <p class="lede">Nodes are either a live PUBG API call or a file this project writes. Edges show what produces or reads what. Color marks how each file behaves across repeated runs &mdash; that behavior is the whole reason the caching layer exists.</p>
+
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:var(--fresh)"></span>re-fetched every run (overwritten)</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--immutable)"></span>write-once, immutable (cache-gated)</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--merge)"></span>merge-updated index (never deleted from)</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--ink-dim)"></span>API endpoint (response not persisted as-is)</div>
+    </div>
+
+    <div class="diagram-wrap">
+<pre class="mermaid">
+flowchart LR
+    A1["GET /players?filter[playerNames]=name<br/>resolve account ID"]
+    A2["GET /players/{id}/seasons/lifetime"]
+    A3["GET /matches/{match_id}<br/>metadata, for CDN asset URL"]
+    A4["GET {telemetry CDN URL}<br/>raw telemetry payload"]
+
+    PS["playerstats/{name}.json"]
+    PI["player-index.json"]
+    TM["match-telemetry/{match_id}-telemetry.json<br/>(shared across every player)"]
+    BI["bot-index.json"]
+
+    A1 -->|player_id, response discarded| PI
+    A1 -->|player_id feeds next call| A2
+    A2 -->|full response saved| PS
+    PS -->|this player's match_ids, from relationships| TM
+    TM -.->|_is_cached? miss triggers| A3
+    A3 -->|asset URL, response discarded| A4
+    A4 -->|full payload saved| TM
+    TM -->|detect_bots on latest cached match| BI
+
+    class A1,A2,A3,A4 api
+    class PS fresh
+    class TM immutable
+    class PI,BI merge
+
+    classDef api fill:#dfe3de,stroke:#58635e,color:#1b2321,stroke-width:1px;
+    classDef fresh fill:#dbe7f5,stroke:#2f6fa8,color:#122236;
+    classDef immutable fill:#f3e2bb,stroke:#a9782c,color:#3b2a0c;
+    classDef merge fill:#e4dcf4,stroke:#6f5aa3,color:#251c3d;
+</pre>
+    </div>
+
+    <div class="notes">
+      <div class="note fresh">
+        <strong>playerstats/{name}.json</strong>
+        Overwritten in full on every run &mdash; no cache check. Lifetime stats change as the player plays more, so staleness isn't acceptable here.
+      </div>
+      <div class="note immutable">
+        <strong>match-telemetry/{match_id}-telemetry.json</strong>
+        <code>_is_cached()</code> checks <code>os.path.exists()</code> before either the metadata call or the CDN fetch even fire. Keyed by match_id only, so a match cached from one player's lookup is silently reused for any other player who shares it.
+      </div>
+      <div class="note merge">
+        <strong>player-index.json / bot-index.json</strong>
+        Not their own API call &mdash; built from data already in flight. Loaded, updated in place, and rewritten whole; existing entries get fields refreshed, records are never removed.
+      </div>
+      <div class="note">
+        <strong>Endpoints that leave no trace</strong>
+        The <code>/players</code> lookup and the per-match <code>/matches/{id}</code> metadata call are both used only in-memory &mdash; one for an account ID, the other for a CDN URL &mdash; and neither response is written to disk.
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="sequence">
+    <h2>main.py &mdash; real execution order</h2>
+    <p class="lede">One straight run for one player. The telemetry fetch loop only touches the network for matches missing from the shared cache; every analysis step after it reads that cache back off disk rather than re-deriving from the API responses.</p>
+
+    <div class="diagram-wrap">
+<pre class="mermaid">
+sequenceDiagram
+    participant U as you (CLI)
+    participant M as main.py
+    participant API as PUBG API
+    participant PI as player-index.json
+    participant PS as playerstats/{name}.json
+    participant TC as match-telemetry/ cache
+    participant BI as bot-index.json
+
+    U->>M: python main.py <playername>
+    M->>API: GET /players?filter[playerNames]=
+    API-->>M: player_id
+    M->>PI: update_player_index (create/merge)
+    M->>API: GET /players/{id}/seasons/lifetime
+    API-->>M: lifetime stats
+    M->>PS: save_json (overwrite)
+    M->>M: render stats table + match history
+
+    M->>M: extract this player's match_ids from relationships
+    loop each match_id
+        M->>TC: cached?
+        alt not cached
+            M->>API: GET /matches/{id} (metadata)
+            API-->>M: telemetry CDN URL
+            M->>API: GET {telemetry CDN URL}
+            API-->>M: telemetry payload
+            M->>TC: save {id}-telemetry.json (write-once)
+        else cached
+            TC-->>M: skip fetch
+        end
+    end
+
+    M->>TC: read telemetry for this player's match_ids
+    M->>M: compute + render combat stats
+    M->>M: select_scoped_match_ids (recency window/cap)
+    M->>TC: read telemetry for scoped match_ids
+    M->>M: compute + render Archetype Tag (tempo + range + weapon signature)
+    M->>M: compute + render Headline Number
+    M->>TC: find this player's most recent cached match
+    M->>M: compute + render last-match brief
+    M->>TC: find latest match in the ENTIRE shared cache (not player-scoped)
+    M->>M: detect_bots on that match
+    M->>BI: update_bot_index (merge)
+    M->>M: render bot summary
+</pre>
+    </div>
+
+    <div class="notes">
+      <div class="note merge">
+        <strong>player-index write lands early</strong>
+        <code>update_player_index</code> runs right after the account-ID lookup, before the lifetime-stats call even goes out &mdash; the index only needs the ID and the searched name, not the stats payload.
+      </div>
+      <div class="note">
+        <strong>Two different "latest match" queries</strong>
+        The last-match brief looks up this player's own most recent cached match. Bot detection deliberately looks up the most recent match across the whole shared cache &mdash; a stand-in for "your" last match until self-identity detection lands.
+      </div>
+      <div class="note">
+        <strong>Scoped set is computed once, reused twice</strong>
+        <code>select_scoped_match_ids</code> runs a single time; both the Archetype Tag and the Headline Number read from that same recency-windowed set instead of each rescanning the full telemetry cache independently.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Source of truth: <code>main.py</code>, <code>api/player_stats.py</code>, <code>api/telemetry_fetcher.py</code>, <code>api/player_index.py</code>, <code>api/bot_index.py</code>, <code>utils/io_helpers.py</code>. <code>api/rate_limiter.py</code> paces requests in memory only &mdash; no persisted state.
+</footer>
+
+<script>
+  var buttons = document.querySelectorAll(".tab-btn");
+  var panels = document.querySelectorAll(".panel");
+  buttons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      buttons.forEach(function (b) { b.classList.remove("active"); });
+      panels.forEach(function (p) { p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+</script>
