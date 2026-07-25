@@ -19,6 +19,7 @@ from api.player_stats import fetch_player_and_match_ids
 from api.rate_limiter import player_api_queue
 from api.telemetry_fetcher import fetch_telemetry_for_matches
 from utils.archetype_tag import compute_archetype_tag
+from utils.combat_stats import compute_combat_stats
 from utils.headline_number import compute_headline_number
 from utils.match_scope import select_scoped_match_ids
 from utils.squad_roster import compute_squad_roster
@@ -57,18 +58,21 @@ async def _run(playernames):
 
     archetypes = {}
     headlines = {}
-    for m in members:
+    combat_stats = {}
+    for i, m in enumerate(members):
         scoped = set(select_scoped_match_ids(m["match_ids"]))
+        possessive = "your" if i == 0 else "their"
         archetype = compute_archetype_tag(m["account_id"], match_ids=scoped)
         m["archetype"] = archetype
         archetypes[m["name"]] = archetype
-        headlines[m["name"]] = compute_headline_number(m["account_id"], match_ids=scoped)
+        headlines[m["name"]] = compute_headline_number(m["account_id"], match_ids=scoped, possessive=possessive)
+        combat_stats[m["name"]] = compute_combat_stats(m["account_id"], match_ids=scoped)
 
     roster = compute_squad_roster(members)
 
     print("\n\n")
     render_squad_roster(roster)
-    render_full_squad_cards(members, archetypes, headlines)
+    render_full_squad_cards(members, archetypes, headlines, combat_stats)
 
 
 def main():

@@ -198,6 +198,18 @@ class TestComputeHeadlineNumber(unittest.TestCase):
 
         self.assertIn(str(result["matches_analyzed"]), result["headline"])
 
+    def test_possessive_defaults_to_your_but_is_overridable(self):
+        # squad.py renders teammate cards with possessive="their" - "your"
+        # would misattribute the teammate's own stats to the running user.
+        for day in range(1, MIN_MATCHES_FOR_CANDIDATE - 1):
+            self._write_match(day, [kill_event(ME, RIVAL)])
+
+        default_result = compute_headline_number(ME, telemetry_dir=self.tmpdir.name)
+        their_result = compute_headline_number(ME, telemetry_dir=self.tmpdir.name, possessive="their")
+
+        self.assertIn("your last", default_result["headline"])
+        self.assertIn("their last", their_result["headline"])
+
 
 if __name__ == '__main__':
     unittest.main()

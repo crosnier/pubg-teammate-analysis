@@ -42,6 +42,16 @@ def _display_name(member, is_self):
     return "you" if is_self else member["name"]
 
 
+def _sentence_case(text):
+    """Capitalize a composed sentence's leading "you" (the generic
+    self-pronoun) without mangling a real player name that happens to
+    lead a different sentence - names keep whatever case they already
+    have."""
+    if text.startswith("you "):
+        return "You" + text[3:]
+    return text
+
+
 def compute_squad_coverage_summary(members):
     """The squad-level range/temperament coverage paragraph.
 
@@ -65,7 +75,7 @@ def compute_squad_coverage_summary(members):
     elif len(distinct_temperaments) == 1:
         opener = f"All-{next(iter(distinct_temperaments))} squad"
     else:
-        opener = "Squad"
+        opener = "Mixed squad"
 
     role_clauses = []
     leftover = []
@@ -79,6 +89,11 @@ def compute_squad_coverage_summary(members):
         else:
             leftover.append((name, range_bucket))
 
+    sentences = []
+    if role_clauses:
+        text = f"{_join_names(role_clauses)}."
+        sentences.append(_sentence_case(text))
+
     if leftover:
         leftover_names = _join_names([name for name, _ in leftover])
         leftover_bucket_indices = sorted({RANGE_ORDER.index(bucket) for _, bucket in leftover})
@@ -88,7 +103,8 @@ def compute_squad_coverage_summary(members):
             low = RANGE_ORDER[leftover_bucket_indices[0]].replace("-Range", "")
             high = RANGE_ORDER[leftover_bucket_indices[-1]].replace("-Range", "")
             span = f"{low.lower()}-to-{high.lower()}"
-        role_clauses.append(f"{leftover_names} cover {span}")
+        text = f"{leftover_names} cover {span}."
+        sentences.append(_sentence_case(text))
 
     range_buckets_present = {m["archetype"]["range"]["range_bucket"] for _, m in profiled}
     missing_buckets = [b for b in RANGE_ORDER if b not in range_buckets_present]
@@ -99,7 +115,7 @@ def compute_squad_coverage_summary(members):
     else:
         concluding = "No overlapping blind spots."
 
-    return f"{opener}: {', '.join(role_clauses)}. {concluding}"
+    return f"{opener}: {' '.join(sentences)} {concluding}"
 
 
 def compute_best_engagement_lead(members, telemetry_dir=TELEMETRY_DIR):

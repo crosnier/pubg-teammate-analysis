@@ -2,6 +2,24 @@
 # utils/display_combat_stats.py
 # ==============================
 
+# Matches the MIN_*_FOR_SIGNAL=8 confidence-gating convention used across
+# tempo/range/weapon/headline signals.
+MIN_MATCHES_FOR_KD = 8
+
+
+def render_kd_summary(stats):
+    """Compact single-line K/D summary for a squad card - the full
+    eliminations/deaths breakdown (render_combat_stats) is main.py's
+    single-player view, not needed on a per-teammate card."""
+    matches_analyzed = stats["matches_analyzed"]
+    if matches_analyzed < MIN_MATCHES_FOR_KD:
+        print(f"K/D    : Not enough data ({matches_analyzed} matches, need {MIN_MATCHES_FOR_KD}+)")
+        return
+    total_elims = stats["total_eliminations"]
+    total_deaths = stats["total_deaths"]
+    kd = total_elims / total_deaths if total_deaths else float(total_elims)
+    print(f"K/D    : {kd:.2f}  ({total_elims}/{total_deaths} across {matches_analyzed} matches)")
+
 
 def render_combat_stats(stats):
     total_elims = stats["total_eliminations"]
