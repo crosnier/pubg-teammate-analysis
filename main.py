@@ -1,9 +1,8 @@
 # ==============================
 # main CLI entry point
 # ==============================
-from api.player_stats import fetch_player_stats
+from api.player_stats import fetch_player_and_match_ids
 from api.rate_limiter import player_api_queue
-from utils.io_helpers import save_json
 from utils.display_stats_by_mode import render_ascii_table, load_player_stats
 from utils.display_match_history import display_match_history
 from api.telemetry_fetcher import fetch_telemetry_for_matches
@@ -16,6 +15,9 @@ from utils.last_match_brief import find_latest_match_for_player, compute_last_ma
 from utils.display_last_match_brief import render_last_match_brief
 from utils.archetype_tag import compute_archetype_tag
 from utils.display_archetype_tag import render_archetype_tag
+from utils.headline_number import compute_headline_number
+from utils.display_headline_number import render_headline_number
+from utils.match_scope import select_scoped_match_ids
 import asyncio
 
 
@@ -28,8 +30,7 @@ async def run(playername):
         await player_api_queue.close()
 
 async def _run(playername):
-    data, player_id = await fetch_player_stats(playername)
-    save_json(data, f"playerstats/{playername}.json")
+    player_id, match_ids = await fetch_player_and_match_ids(playername)
     print(f"[SUCCESS] Stats saved for '{playername}' (account ID: {player_id})")
     print()
     print()
@@ -42,13 +43,6 @@ async def _run(playername):
     print("\n\n")
     display_match_history(playername)
 
-    # Fetch telemetry for all matches
-    match_ids = []
-    relationships = data["data"]["relationships"]
-    for key in relationships:
-        if key.startswith("matches"):
-            match_ids.extend([entry["id"] for entry in relationships[key].get("data", [])])
-
     print()
     print()
     print(f"[INFO] Fetching telemetry for {len(match_ids)} matches...")
@@ -56,13 +50,25 @@ async def _run(playername):
 
     # Display combat stats mined from cached telemetry
     print("\n\n")
-    combat_stats = compute_combat_stats(player_id)
+    combat_stats = compute_combat_stats(player_id, match_ids=match_ids)
     render_combat_stats(combat_stats)
+
+    # Resolve the player's scoped match set once and reuse it across both
+    # signal computations below, rather than each one independently
+    # rescanning the telemetry cache. match_ids (this player's own known
+    # matches, from the player-stats API response above) is the candidate
+    # list - never the whole shared cache, which holds other players' too.
+    scoped_match_ids = set(select_scoped_match_ids(match_ids))
 
     # Display Archetype Tag (tempo + range + weapon signature) mined from cached telemetry
     print("\n\n")
-    archetype = compute_archetype_tag(player_id)
+    archetype = compute_archetype_tag(player_id, match_ids=scoped_match_ids)
     render_archetype_tag(archetype)
+
+    # Display the Headline Number: one differentiating, confidence-gated stat
+    print("\n\n")
+    headline = compute_headline_number(player_id, match_ids=scoped_match_ids)
+    render_headline_number(headline)
 
     # Last Match section: brief for this player, then bot detection for
     # whichever cached match is most recent overall (a stand-in for "your"
@@ -70,7 +76,7 @@ async def _run(playername):
     print("\n\n")
     latest_match_id, latest_events = find_latest_match()
 
-    player_match_id, player_events = find_latest_match_for_player(player_id)
+    player_match_id, player_events = find_latest_match_for_player(player_id, match_ids)
     if player_match_id:
         brief = compute_last_match_brief(player_id, player_match_id, player_events)
         played_with_you = (player_match_id == latest_match_id) if latest_match_id else None

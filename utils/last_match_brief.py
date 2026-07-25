@@ -1,7 +1,6 @@
 # ==============================
 # utils/last_match_brief.py
 # ==============================
-import glob
 import json
 import os
 from datetime import datetime
@@ -13,25 +12,39 @@ MELEE_CAUSERS = {"PlayerFemale_A", "PlayerMale_A"}
 VEHICLE_HINTS = ("Uaz", "Dacia", "Mirado", "Coupe", "PickupTruck", "Buggy", "Motorbike", "Rony", "Van", "Scooter")
 _TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
+# How close in time two teammates' deaths need to be to read as "went down
+# in the same fight" rather than "dead earlier, unrelated". Checked against
+# real teammate-death-gap timing across 250 cached squad matches (10,744
+# gaps): the distribution has no clean bimodal split, but its p60 (~29s)
+# lines up closely with QUICK_KILL_WINDOW_SECONDS in tempo_signal.py (30s,
+# separately calibrated at ~p60 of the contact-to-kill gap) - reusing the
+# same window keeps "quick/connected" framed consistently project-wide
+# rather than picking a second, unrelated constant for a similar question.
+SAME_ENGAGEMENT_WINDOW_SECONDS = 30
 
-def _load_telemetry_files(telemetry_dir=TELEMETRY_DIR):
-    for path in glob.glob(os.path.join(telemetry_dir, "*-telemetry.json")):
-        match_id = os.path.basename(path).replace("-telemetry.json", "")
-        with open(path, "r") as f:
-            yield match_id, json.load(f)
 
-
-def find_latest_match_for_player(account_id, telemetry_dir=TELEMETRY_DIR):
+def find_latest_match_for_player(account_id, candidate_match_ids, telemetry_dir=TELEMETRY_DIR):
     """Return (match_id, events) for the player's most recently played cached match.
 
-    Same LogMatchStart-timestamp approach as bot_detection.find_latest_match,
-    but scoped to matches the given account actually appears in.
+    candidate_match_ids is the player's authoritative match list, straight
+    from the PUBG player-stats API response (see main.py) - this only opens
+    the specific cached files that are actually this player's own, rather
+    than scanning and checking presence across the whole shared telemetry
+    cache (which holds many other players' matches too). Not every
+    candidate match is guaranteed to be cached yet, so missing files are
+    skipped rather than erroring.
     """
     latest_timestamp = None
     latest_match_id = None
     latest_events = None
 
-    for match_id, events in _load_telemetry_files(telemetry_dir):
+    for match_id in candidate_match_ids:
+        path = os.path.join(telemetry_dir, f"{match_id}-telemetry.json")
+        if not os.path.exists(path):
+            continue
+        with open(path, "r") as f:
+            events = json.load(f)
+
         if not player_present_in_match(account_id, events):
             continue
 
@@ -86,6 +99,72 @@ def _parse_timestamp(value):
     return datetime.strptime(value, _TIMESTAMP_FORMAT) if value else None
 
 
+def _compute_squad_status_at_death(account_id, events, player_death_ts):
+    """Which squadmates were still alive when this player died, and which
+    were already down before it - and if already down, whether that was
+    part of the same fight or unrelated.
+
+    Returns None when there's nothing meaningful to report: the player
+    survived to match end (no death to anchor the comparison), or no other
+    real-player teammates share their teamId (solo, or squad never loaded
+    in for this cached match).
+    """
+    if player_death_ts is None:
+        return None
+
+    team_id = next(
+        (
+            (e.get("character") or {}).get("teamId")
+            for e in events
+            if e.get("_T") == "LogPlayerCreate" and (e.get("character") or {}).get("accountId") == account_id
+        ),
+        None,
+    )
+    if team_id is None:
+        return None
+
+    teammates = {}
+    for event in events:
+        if event.get("_T") != "LogPlayerCreate":
+            continue
+        character = event.get("character") or {}
+        if character.get("type") != "user" or character.get("teamId") != team_id:
+            continue
+        teammate_id = character.get("accountId")
+        if teammate_id != account_id:
+            teammates[teammate_id] = character.get("name", "Unknown")
+
+    if not teammates:
+        return None
+
+    death_ts_by_teammate = {}
+    for event in events:
+        if event.get("_T") != "LogPlayerKillV2" or event.get("isSuicide"):
+            continue
+        killer = event.get("killer") or {}
+        victim = event.get("victim") or {}
+        victim_id = victim.get("accountId")
+        if killer.get("type") != "user" or victim.get("type") != "user" or victim_id not in teammates:
+            continue
+        ts = _parse_timestamp(event.get("_D"))
+        if victim_id not in death_ts_by_teammate or ts < death_ts_by_teammate[victim_id]:
+            death_ts_by_teammate[victim_id] = ts
+
+    squad_status = []
+    for teammate_id, name in teammates.items():
+        teammate_death_ts = death_ts_by_teammate.get(teammate_id)
+
+        if teammate_death_ts is None or teammate_death_ts > player_death_ts:
+            squad_status.append({"name": name, "status": "alive"})
+            continue
+
+        seconds_before = round((player_death_ts - teammate_death_ts).total_seconds(), 1)
+        status = "same_engagement" if seconds_before <= SAME_ENGAGEMENT_WINDOW_SECONDS else "eliminated_earlier"
+        squad_status.append({"name": name, "status": status, "seconds_before": seconds_before})
+
+    return squad_status
+
+
 def compute_last_match_brief(account_id, match_id, events):
     match_start = next((e for e in events if e.get("_T") == "LogMatchStart"), None)
     match_end = next((e for e in events if e.get("_T") == "LogMatchEnd"), None)
@@ -133,6 +212,8 @@ def compute_last_match_brief(account_id, match_id, events):
     end_ts = death_ts or (_parse_timestamp(match_end.get("_D")) if match_end else None)
     time_alive_seconds = int((end_ts - start_ts).total_seconds()) if start_ts and end_ts else None
 
+    squad_status = _compute_squad_status_at_death(account_id, events, death_ts)
+
     return {
         "match_id": match_id,
         "round_rank": round_rank,
@@ -140,4 +221,5 @@ def compute_last_match_brief(account_id, match_id, events):
         "kill_count": kill_count,
         "most_used_weapon": most_used_weapon,
         "death_info": death_info,
+        "squad_status": squad_status,
     }

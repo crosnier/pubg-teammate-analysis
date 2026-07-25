@@ -18,13 +18,8 @@ class TestFormatNumber(unittest.TestCase):
     def test_converts_time_survived_seconds_to_minutes(self):
         self.assertEqual(format_number(120, key="longestTimeSurvived"), "2")
 
-    def test_time_survived_key_does_not_match_case_sensitive_check(self):
-        # Documents current behavior: "timeSurvived" (lowercase t) does not
-        # match the "TimeSurvived" substring check, so it's formatted as a
-        # plain number rather than converted from seconds to minutes. See
-        # the "Time Survived (min)" row mislabeling flagged in issue #17's
-        # test audit - tracked separately, not fixed here.
-        self.assertEqual(format_number(120, key="timeSurvived"), "120")
+    def test_time_survived_lowercase_key_converts_to_minutes(self):
+        self.assertEqual(format_number(120, key="timeSurvived"), "2")
 
     def test_non_numeric_value_defaults_to_zero(self):
         self.assertEqual(format_number(None), "0")

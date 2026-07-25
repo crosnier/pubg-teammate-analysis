@@ -26,6 +26,17 @@ def render_last_match_brief(playername, brief, played_with_you=None):
     else:
         print("Died To    : Survived to match end")
 
+    squad_status = brief.get("squad_status")
+    if squad_status:
+        print("Squad Status at the time:")
+        for teammate in squad_status:
+            if teammate["status"] == "alive":
+                print(f"  {teammate['name']}: still alive")
+            elif teammate["status"] == "same_engagement":
+                print(f"  {teammate['name']}: went down {teammate['seconds_before']}s earlier, same fight")
+            else:
+                print(f"  {teammate['name']}: already eliminated earlier, unrelated to this fight")
+
     if played_with_you is not None:
         print(f"In your last shared match: {'Yes' if played_with_you else 'No'}")
     print()

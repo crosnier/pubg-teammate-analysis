@@ -11,11 +11,11 @@ post-match coaching actually values.
 
 - [x] Archetype Tag (headline label: range + tempo + signature weapon) - see `utils/archetype_tag.py`; presented as plain tempo/range/weapon fields plus a short `Range/Temperament` tag rather than an invented flavor-text headline
 - [ ] Map Drop Zone + Flow (primary + secondary landing region, per-region flow)
-- [ ] The Headline Number (one differentiating, confidence-gated stat)
+- [x] The Headline Number (one differentiating, confidence-gated stat) - see `utils/headline_number.py`
 - [x] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern) - see `utils/weapon_signature.py`
-- [ ] Last Match Snapshot (extends #13, adds squad-status-at-death)
-- [ ] Squad Read (synergy/gap line, bolstered when high-confidence)
-- [ ] Squad Roster summary view (Squads mode, 2+ teammates)
+- [x] Last Match Snapshot (extends #13, adds squad-status-at-death) - see `utils/last_match_brief.py`'s `_compute_squad_status_at_death`
+- [x] Squad Read (synergy/gap line, bolstered when high-confidence) - see `utils/squad_read.py`; compute module only, not yet wired into a multi-player CLI flow (see the Resolved note below)
+- [x] Squad Roster summary view (Squads mode, 2+ teammates) - see `utils/squad_roster.py` and `squad.py` (new multi-player entry point)
 - [ ] Mode 2: After-Action Report (conceptual scope only)
 - [ ] Solo mode variant (conceptual scope only)
 - [x] Data Budget & Fetch Policy - see `utils/match_scope.py` (recency-window + match-count cap, both env-configurable)
@@ -424,6 +424,16 @@ since there's no detection code to log from.
   coordinate bounds)
 - Mode 2's full slot design (this doc only scopes it conceptually)
 - The specific failsafe hotkey combination
+- Persona label variety: the current taxonomy is intentionally small (5
+  tempo tags, a 3x3 range/temperament grid) - a deliberate choice made
+  across both Archetype Tag ("plain fields... rather than an invented
+  flavor-text headline") and Squad Read (compositional logic over a
+  hand-authored role table), not an oversight. If richer/more varied
+  persona language becomes a priority later, `docs/vision.md`'s existing
+  stance is to keep LLM narration out of scope until core capabilities
+  are stable - flagged as a future LLM-personalization candidate once
+  that's revisited, not something to bolt onto the current rule-based
+  system piecemeal.
 
 Resolved: Archetype tempo bucket thresholds and range-axis thresholds are
 both calibrated against real telemetry (1,636 cached matches, including
@@ -432,3 +442,94 @@ top-30 ranked PC-NA leaderboard players) - see `utils/tempo_signal.py` and
 implemented in `utils/match_scope.py`, currently set low (50 matches)
 pending a dedicated performance pass, not yet the intended production
 default (250).
+
+Resolved: The Headline Number's candidate pool, eligibility gate,
+stability check, and scoring are implemented in `utils/headline_number.py`.
+Five candidates cover the PEPS+ categories the doc calls out (Firepower,
+Finishing, Combat Distance, plus a team-support read via revives): avg
+kills before first death, close-range fight win rate, knockdown-to-kill
+conversion rate, revives per match, damage per match. Eligibility requires
+`MIN_MATCHES_FOR_CANDIDATE = 8` matches of underlying data, matching the
+threshold used across the other Archetype Tag signals. Stability is a
+chronological first-half/second-half check requiring the same direction
+of deviation from a neutral reference in both halves, with neither half's
+deviation dwarfing the other's. Scoring uses two standard, self-relative
+statistical tests rather than one blended formula, since a single formula
+turned out to blow up for count-type stats at large magnitudes: rate-type
+candidates (win rate, conversion rate) use a one-sample z-test for a
+proportion against a neutral 50/50 split; magnitude-type candidates
+(kills, revives, damage) use a one-sample t-statistic against a neutral
+zero. Falls back to a plain kill count when nothing clears the bar.
+
+Resolved: Last Match Snapshot's squad-status-at-death cross-reference is
+implemented in `utils/last_match_brief.py` (`_compute_squad_status_at_death`).
+Each teammate (same `teamId`, real player) is classified as still alive,
+went down in the same fight, or eliminated earlier and unrelated, by
+comparing their own first real death timestamp against this player's death
+timestamp. The same-fight cutoff (`SAME_ENGAGEMENT_WINDOW_SECONDS = 30`) is
+grounded in real data - checked against 10,744 real teammate-death-gap
+timings across 250 cached squad matches, which showed no clean bimodal
+split, but whose p60 (~29s) lines up closely with `tempo_signal.py`'s
+independently-calibrated `QUICK_KILL_WINDOW_SECONDS` (30s), so the same
+window is reused rather than introducing a second, unrelated constant for
+a similar "quick/connected" question.
+
+Resolved: Squad Read's general synergy line is implemented in
+`utils/squad_read.py` as compositional logic (range-bucket delta +
+temperament delta between two players), not a hand-authored lookup table
+of named roles - scales to any pairing without maintaining a combo table,
+and stays consistent with how the other signals derive behavior from raw
+data rather than fixed categories. The bolstered "opens first" line reuses
+`tempo_signal.py`'s own time-to-first-contact reading for each player and
+compares them within the same shared match; the confidence bar is the
+doc's own literal worked example - most recent 8 shared matches, at least
+5 needed to name a leader (the doc's parenthetical "~70%+" doesn't match
+5/8 exactly, so the concrete numeric example was treated as authoritative
+over the loose gloss).
+
+Resolved: Multi-player CLI support landed as `squad.py`, a genuinely
+separate entry point from `main.py` rather than a mode switch inside it -
+the single-player flow is untouched (verified: identical output before
+and after, plus a full end-to-end live re-run). It fetches all squad
+members' player stats concurrently (safe today - `api/rate_limiter.py`'s
+queue already serializes the actual HTTP calls via an `asyncio.Lock`
+regardless of caller count), then does one combined, deduplicated
+telemetry fetch across the whole squad instead of one per player, so a
+match two teammates shared only gets pulled once and the per-run new-
+match cap applies to the squad as a whole rather than multiplying by
+squad size. Verified live against two real players with 53 shared cached
+matches: 79 combined unique matches identified, cache dedup and telemetry
+fetch worked correctly end to end.
+
+Resolved: Squad Roster's squad-level synergy text
+(`utils/squad_roster.py`) generalizes Squad Read's compositional approach
+to N players rather than stitching together pairwise comparisons: range-
+bucket coverage (which buckets are represented, which are missing) and
+temperament distribution across the whole squad, with per-member role
+callouts ("entry fragger", "support anchor") derived from that member's
+own (range, temperament) pair - not a hand-authored table of squad-
+composition combos. The bolstered "opens first" line compares "you"
+against each teammate and surfaces whichever comparison is strongest,
+matching the design doc's mockup (one standout teammate highlighted, not
+one line per pairing).
+
+Resolved: Did a full sentence-to-math audit across every text-generating
+module before the Mode 1 PR - not just "does it run," but "does every
+displayed sentence accurately restate the specific computed value behind
+it." Traced every branch by hand against real captured output and the
+underlying source data. Found and fixed two real mismatches: (1)
+`display_archetype_tag.py` labeled `tempo_signal.py`'s
+`matches_with_contact` as "matches with early contact," but that count
+includes contact at any point in the match, not specifically early
+contact - the word "early" wasn't supported by the underlying value, so
+it was dropped. (2) Two Headline Number candidates
+(`kills_before_death`, `revives`) carried a fixed narrative flourish
+("...they don't stop early", "...the squad's safety net") regardless of
+whether the actual computed mean was high or low - removed both, stating
+the number plainly, consistent with the project's existing stance against
+invented flavor text. Everything else checked (tempo bucket assignment,
+range/weapon signature framing, squad synergy branch logic, squad roster
+role callouts and coverage gaps, engagement-lead threshold framing) was
+confirmed to correctly and exclusively reflect its underlying data, with
+no case where the displayed label could exist independent of the
+specific values shown.
