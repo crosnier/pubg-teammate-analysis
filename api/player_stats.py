@@ -16,6 +16,11 @@ HEADERS = {
 }
 BASE_URL = "https://api.pubg.com/shards/steam"
 
+# Which relationship keys represent team-mode (duo/squad) matches, as
+# opposed to solo-queue (matchesSolo/matchesSoloFPP). Used to scope the
+# Range and Weapon signals to team-mode play only - see issue #42.
+TEAM_MODE_RELATIONSHIP_KEYS = {"matchesDuo", "matchesDuoFPP", "matchesSquad", "matchesSquadFPP"}
+
 
 async def fetch_player_stats(playername):
     # Get account ID from player name
@@ -37,13 +42,21 @@ async def fetch_player_and_match_ids(playername):
     return their known match ID list - the shared first step needed by
     both the single-player CLI (main.py) and multi-player squad lookups
     (squad.py), so both stay behaviorally identical for this step.
+
+    Also returns the team-mode-only subset (duo/squad, excluding solo
+    queue) - see TEAM_MODE_RELATIONSHIP_KEYS - for callers scoping
+    Range/Weapon signals to team-mode play.
     """
     data, player_id = await fetch_player_stats(playername)
     save_json(data, f"playerstats/{playername}.json")
 
     match_ids = []
+    team_mode_match_ids = []
     for key, relationship in data["data"]["relationships"].items():
         if key.startswith("matches"):
-            match_ids.extend([entry["id"] for entry in relationship.get("data", [])])
+            ids = [entry["id"] for entry in relationship.get("data", [])]
+            match_ids.extend(ids)
+            if key in TEAM_MODE_RELATIONSHIP_KEYS:
+                team_mode_match_ids.extend(ids)
 
-    return player_id, match_ids
+    return player_id, match_ids, team_mode_match_ids

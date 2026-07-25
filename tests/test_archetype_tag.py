@@ -94,6 +94,40 @@ class TestComputeArchetypeTag(unittest.TestCase):
         self.assertEqual(result["tempo"]["tempo_tag"], "Slow-Roll Patient")
         self.assertIn("Passive", result["short_tag"])
 
+    def test_team_mode_match_ids_scopes_range_and_weapon_but_not_tempo(self):
+        # 8 team-mode matches: fast Close-Range AR kills.
+        for i in range(8):
+            self._write_match(f"team-{i}", [
+                match_start(),
+                create_event(ME),
+                damage_event(ME, RIVAL, 20),
+                kill_event(ME, RIVAL, "WeapAK47_C", 15, 25),
+            ])
+        # 8 additional solo-mode matches: also fast (same tempo), but
+        # Long-Range SR kills - would flip Range/Weapon if not excluded.
+        for i in range(8):
+            self._write_match(f"solo-{i}", [
+                match_start(),
+                create_event(ME),
+                damage_event(ME, RIVAL, 20),
+                kill_event(ME, RIVAL, "WeapKar98k_C", 200, 25),
+            ])
+
+        all_ids = [f"team-{i}" for i in range(8)] + [f"solo-{i}" for i in range(8)]
+        team_ids = [f"team-{i}" for i in range(8)]
+
+        result = compute_archetype_tag(
+            ME, telemetry_dir=self.tmpdir.name, match_ids=all_ids, team_mode_match_ids=team_ids,
+        )
+
+        # Tempo stays on the full (unscoped) match set - 16 fast matches either way.
+        self.assertEqual(result["tempo"]["tempo_tag"], "Hot-Drop Headhunter")
+        self.assertEqual(result["tempo"]["matches_analyzed"], 16)
+        # Range/Weapon reflect only the 8 team-mode matches, not all 16.
+        self.assertEqual(result["range"]["range_bucket"], "Close-Range")
+        self.assertEqual(result["weapon"]["signature"], "AR")
+        self.assertEqual(result["range"]["kills_analyzed"], 8)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -34,7 +34,7 @@ async def run(playername):
 
 
 async def _run(playername):
-    player_id, match_ids = await fetch_player_and_match_ids(playername)
+    player_id, match_ids, team_mode_match_ids = await fetch_player_and_match_ids(playername)
     print(f"[SUCCESS] Stats saved for '{playername}' (account ID: {player_id})")
 
     print()
@@ -42,8 +42,9 @@ async def _run(playername):
     await fetch_telemetry_for_matches(match_ids)
 
     scoped_match_ids = set(select_scoped_match_ids(match_ids))
+    team_mode_scoped_ids = set(select_scoped_match_ids(team_mode_match_ids))
 
-    archetype = compute_archetype_tag(player_id, match_ids=scoped_match_ids)
+    archetype = compute_archetype_tag(player_id, match_ids=scoped_match_ids, team_mode_match_ids=team_mode_scoped_ids)
     headline = compute_headline_number(player_id, match_ids=scoped_match_ids)
     combat_stats = compute_combat_stats(player_id, match_ids=scoped_match_ids)
     coaching = compute_solo_coaching(player_id, headline, scoped_match_ids)

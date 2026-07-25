@@ -30,7 +30,7 @@ async def run(playername):
         await player_api_queue.close()
 
 async def _run(playername):
-    player_id, match_ids = await fetch_player_and_match_ids(playername)
+    player_id, match_ids, team_mode_match_ids = await fetch_player_and_match_ids(playername)
     print(f"[SUCCESS] Stats saved for '{playername}' (account ID: {player_id})")
     print()
     print()
@@ -59,10 +59,11 @@ async def _run(playername):
     # matches, from the player-stats API response above) is the candidate
     # list - never the whole shared cache, which holds other players' too.
     scoped_match_ids = set(select_scoped_match_ids(match_ids))
+    team_mode_scoped_ids = set(select_scoped_match_ids(team_mode_match_ids))
 
     # Display Archetype Tag (tempo + range + weapon signature) mined from cached telemetry
     print("\n\n")
-    archetype = compute_archetype_tag(player_id, match_ids=scoped_match_ids)
+    archetype = compute_archetype_tag(player_id, match_ids=scoped_match_ids, team_mode_match_ids=team_mode_scoped_ids)
     render_archetype_tag(archetype)
 
     # Display the Headline Number: one differentiating, confidence-gated stat
