@@ -14,7 +14,7 @@ post-match coaching actually values.
 - [x] The Headline Number (one differentiating, confidence-gated stat) - see `utils/headline_number.py`
 - [x] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern) - see `utils/weapon_signature.py`
 - [x] Last Match Snapshot (extends #13, adds squad-status-at-death) - see `utils/last_match_brief.py`'s `_compute_squad_status_at_death`
-- [ ] Squad Read (synergy/gap line, bolstered when high-confidence)
+- [x] Squad Read (synergy/gap line, bolstered when high-confidence) - see `utils/squad_read.py`; compute module only, not yet wired into a multi-player CLI flow (see the Resolved note below)
 - [ ] Squad Roster summary view (Squads mode, 2+ teammates)
 - [ ] Mode 2: After-Action Report (conceptual scope only)
 - [ ] Solo mode variant (conceptual scope only)
@@ -424,6 +424,14 @@ since there's no detection code to log from.
   coordinate bounds)
 - Mode 2's full slot design (this doc only scopes it conceptually)
 - The specific failsafe hotkey combination
+- Multi-player CLI wiring so Squad Read/Squad Roster are runnable
+  end-to-end (today `main.py` only profiles one player per run) - planned
+  as a combined follow-up for both slots: a separate entry point reusing
+  the existing single-player functions untouched, one deduplicated
+  telemetry fetch across all squad members instead of one per player, and
+  concurrent player-stats fetches (safe today - `api/rate_limiter.py`'s
+  queue already serializes via an `asyncio.Lock` regardless of caller
+  count).
 
 Resolved: Archetype tempo bucket thresholds and range-axis thresholds are
 both calibrated against real telemetry (1,636 cached matches, including
@@ -463,3 +471,17 @@ split, but whose p60 (~29s) lines up closely with `tempo_signal.py`'s
 independently-calibrated `QUICK_KILL_WINDOW_SECONDS` (30s), so the same
 window is reused rather than introducing a second, unrelated constant for
 a similar "quick/connected" question.
+
+Resolved: Squad Read's general synergy line is implemented in
+`utils/squad_read.py` as compositional logic (range-bucket delta +
+temperament delta between two players), not a hand-authored lookup table
+of named roles - scales to any pairing without maintaining a combo table,
+and stays consistent with how the other signals derive behavior from raw
+data rather than fixed categories. The bolstered "opens first" line reuses
+`tempo_signal.py`'s own time-to-first-contact reading for each player and
+compares them within the same shared match; the confidence bar is the
+doc's own literal worked example - most recent 8 shared matches, at least
+5 needed to name a leader (the doc's parenthetical "~70%+" doesn't match
+5/8 exactly, so the concrete numeric example was treated as authoritative
+over the loose gloss). Compute module only for now - see the open
+question above on multi-player CLI wiring.

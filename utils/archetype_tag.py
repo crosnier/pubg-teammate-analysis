@@ -41,6 +41,7 @@ def compute_archetype_tag(account_id, match_ids, telemetry_dir=TELEMETRY_DIR):
         "tempo": tempo,
         "range": range_signal,
         "weapon": weapon,
+        "temperament": temperament,
         "short_tag": short_tag,
         "matches_analyzed": len(match_ids),
     }
