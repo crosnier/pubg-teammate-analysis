@@ -252,8 +252,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "score": _score_magnitude(values),
                 "sentence": (
                     f"Averages {statistics.mean(values):.1f} kills before first death "
-                    f"over your last {matches_analyzed} matches - when they get rolling, "
-                    "they don't stop early"
+                    f"over your last {matches_analyzed} matches"
                 ),
             })
 
@@ -264,7 +263,7 @@ def compute_headline_number(account_id, match_ids=None, telemetry_dir=TELEMETRY_
                 "score": _score_magnitude(values),
                 "sentence": (
                     f"Averages {statistics.mean(values):.1f} revives per match over your "
-                    f"last {matches_analyzed} matches - the squad's safety net"
+                    f"last {matches_analyzed} matches"
                 ),
             })
 

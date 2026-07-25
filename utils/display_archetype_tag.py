@@ -14,7 +14,7 @@ def render_archetype_tag(archetype):
 
     tempo_line = tempo["tempo_tag"] or "Not enough data"
     if tempo["tempo_tag"]:
-        tempo_line += f"  ({tempo['matches_with_contact']}/{tempo['matches_analyzed']} matches with early contact)"
+        tempo_line += f"  ({tempo['matches_with_contact']}/{tempo['matches_analyzed']} matches with contact)"
     print(f"Tempo  : {tempo_line}")
 
     range_bucket = range_signal["range_bucket"]

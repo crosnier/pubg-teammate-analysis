@@ -424,6 +424,16 @@ since there's no detection code to log from.
   coordinate bounds)
 - Mode 2's full slot design (this doc only scopes it conceptually)
 - The specific failsafe hotkey combination
+- Persona label variety: the current taxonomy is intentionally small (5
+  tempo tags, a 3x3 range/temperament grid) - a deliberate choice made
+  across both Archetype Tag ("plain fields... rather than an invented
+  flavor-text headline") and Squad Read (compositional logic over a
+  hand-authored role table), not an oversight. If richer/more varied
+  persona language becomes a priority later, `docs/vision.md`'s existing
+  stance is to keep LLM narration out of scope until core capabilities
+  are stable - flagged as a future LLM-personalization candidate once
+  that's revisited, not something to bolt onto the current rule-based
+  system piecemeal.
 
 Resolved: Archetype tempo bucket thresholds and range-axis thresholds are
 both calibrated against real telemetry (1,636 cached matches, including
@@ -502,3 +512,24 @@ composition combos. The bolstered "opens first" line compares "you"
 against each teammate and surfaces whichever comparison is strongest,
 matching the design doc's mockup (one standout teammate highlighted, not
 one line per pairing).
+
+Resolved: Did a full sentence-to-math audit across every text-generating
+module before the Mode 1 PR - not just "does it run," but "does every
+displayed sentence accurately restate the specific computed value behind
+it." Traced every branch by hand against real captured output and the
+underlying source data. Found and fixed two real mismatches: (1)
+`display_archetype_tag.py` labeled `tempo_signal.py`'s
+`matches_with_contact` as "matches with early contact," but that count
+includes contact at any point in the match, not specifically early
+contact - the word "early" wasn't supported by the underlying value, so
+it was dropped. (2) Two Headline Number candidates
+(`kills_before_death`, `revives`) carried a fixed narrative flourish
+("...they don't stop early", "...the squad's safety net") regardless of
+whether the actual computed mean was high or low - removed both, stating
+the number plainly, consistent with the project's existing stance against
+invented flavor text. Everything else checked (tempo bucket assignment,
+range/weapon signature framing, squad synergy branch logic, squad roster
+role callouts and coverage gaps, engagement-lead threshold framing) was
+confirmed to correctly and exclusively reflect its underlying data, with
+no case where the displayed label could exist independent of the
+specific values shown.
