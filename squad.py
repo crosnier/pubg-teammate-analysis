@@ -40,9 +40,14 @@ async def _run(playernames):
     fetched = await asyncio.gather(*(fetch_player_and_match_ids(name) for name in playernames))
 
     members = []
-    for name, (account_id, match_ids) in zip(playernames, fetched):
+    for name, (account_id, match_ids, team_mode_match_ids) in zip(playernames, fetched):
         print(f"[SUCCESS] Stats saved for '{name}' (account ID: {account_id})")
-        members.append({"name": name, "account_id": account_id, "match_ids": match_ids})
+        members.append({
+            "name": name,
+            "account_id": account_id,
+            "match_ids": match_ids,
+            "team_mode_match_ids": team_mode_match_ids,
+        })
 
     # One combined, deduplicated telemetry fetch for the whole squad - a
     # match two teammates played together only needs pulling once
@@ -61,8 +66,9 @@ async def _run(playernames):
     combat_stats = {}
     for i, m in enumerate(members):
         scoped = set(select_scoped_match_ids(m["match_ids"]))
+        team_mode_scoped = set(select_scoped_match_ids(m["team_mode_match_ids"]))
         possessive = "your" if i == 0 else "their"
-        archetype = compute_archetype_tag(m["account_id"], match_ids=scoped)
+        archetype = compute_archetype_tag(m["account_id"], match_ids=scoped, team_mode_match_ids=team_mode_scoped)
         m["archetype"] = archetype
         archetypes[m["name"]] = archetype
         headlines[m["name"]] = compute_headline_number(m["account_id"], match_ids=scoped, possessive=possessive)
