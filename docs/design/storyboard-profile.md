@@ -13,7 +13,7 @@ post-match coaching actually values.
 - [ ] Map Drop Zone + Flow (primary + secondary landing region, per-region flow)
 - [x] The Headline Number (one differentiating, confidence-gated stat) - see `utils/headline_number.py`
 - [x] Weapon Signature (or honest "Wildcard" framing when there's no clear pattern) - see `utils/weapon_signature.py`
-- [ ] Last Match Snapshot (extends #13, adds squad-status-at-death)
+- [x] Last Match Snapshot (extends #13, adds squad-status-at-death) - see `utils/last_match_brief.py`'s `_compute_squad_status_at_death`
 - [ ] Squad Read (synergy/gap line, bolstered when high-confidence)
 - [ ] Squad Roster summary view (Squads mode, 2+ teammates)
 - [ ] Mode 2: After-Action Report (conceptual scope only)
@@ -450,3 +450,16 @@ candidates (win rate, conversion rate) use a one-sample z-test for a
 proportion against a neutral 50/50 split; magnitude-type candidates
 (kills, revives, damage) use a one-sample t-statistic against a neutral
 zero. Falls back to a plain kill count when nothing clears the bar.
+
+Resolved: Last Match Snapshot's squad-status-at-death cross-reference is
+implemented in `utils/last_match_brief.py` (`_compute_squad_status_at_death`).
+Each teammate (same `teamId`, real player) is classified as still alive,
+went down in the same fight, or eliminated earlier and unrelated, by
+comparing their own first real death timestamp against this player's death
+timestamp. The same-fight cutoff (`SAME_ENGAGEMENT_WINDOW_SECONDS = 30`) is
+grounded in real data - checked against 10,744 real teammate-death-gap
+timings across 250 cached squad matches, which showed no clean bimodal
+split, but whose p60 (~29s) lines up closely with `tempo_signal.py`'s
+independently-calibrated `QUICK_KILL_WINDOW_SECONDS` (30s), so the same
+window is reused rather than introducing a second, unrelated constant for
+a similar "quick/connected" question.
