@@ -83,11 +83,23 @@ redoing setup.
 ```text
 main.py
  ├──▶ Load player name from CLI, cross-reference player-index.json
- ├──▶ Fetch lifetime stats via the PUBG API      → utils/io_helpers.py
- ├──▶ Display match history, grouped by mode     → utils/display_match_history.py
- ├──▶ (optional) Fetch match telemetry           → api/telemetry_fetcher.py
- └──▶ Render categorized stat tables by mode     → utils/display_stats_by_mode.py
+ ├──▶ Fetch lifetime stats via the PUBG API        → api/player_stats.py
+ ├──▶ Render categorized stat tables by mode       → utils/display_stats_by_mode.py
+ ├──▶ Display match history, grouped by mode       → utils/display_match_history.py
+ ├──▶ Fetch match telemetry for cached matches     → api/telemetry_fetcher.py
+ ├──▶ Combat stats: eliminations/deaths breakdown  → utils/combat_stats.py
+ ├──▶ Archetype Tag: tempo + range + weapon        → utils/archetype_tag.py
+ │     ├─ time-to-first-contact tempo bucket       → utils/tempo_signal.py
+ │     ├─ median kill-distance range bucket        → utils/range_signal.py
+ │     └─ weapon-class preference / Wildcard       → utils/weapon_signature.py
+ ├──▶ Last match brief for this player             → utils/last_match_brief.py
+ └──▶ Bot detection for the most recent match       → utils/bot_detection.py
 ```
+
+Archetype Tag scopes each player to their own recent matches (see
+`utils/match_scope.py`) - a widening 30-90 day recency window, capped at a
+configurable match count - rather than scanning every cached match, since
+telemetry caching is shared across all players ever looked up.
 
 ## Project Structure
 
@@ -96,7 +108,7 @@ main.py
 ├── doctor.py                # Environment health check (Python, deps, .env, API heartbeat)
 ├── setup.ps1                # One-click Windows setup (venv, deps, .env, doctor)
 ├── api/                     # PUBG API client: player stats, telemetry, player index, rate limiter
-├── utils/                   # Display formatting + I/O helpers
+├── utils/                   # Signal computation (tempo/range/weapon/combat/bots) + display formatting
 ├── tests/                   # Unit tests
 ├── docs/                    # Vision, design specs, sample output
 ├── images/                  # README and design assets

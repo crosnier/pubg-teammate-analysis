@@ -18,6 +18,10 @@ def match_start(seconds_offset=0, base="2026-07-22T00:00:00.000Z"):
     return {"_T": "LogMatchStart", "_D": base}
 
 
+def create_event(account_id):
+    return {"_T": "LogPlayerCreate", "character": {"accountId": account_id, "type": "user"}}
+
+
 def damage_event(attacker_id, victim_id, seconds_after_start,
                   attacker_type="user", victim_type="user"):
     return {
@@ -44,6 +48,7 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
     def test_hot_drop_headhunter_on_fast_contact_and_quick_kill(self):
         events = [
             match_start(),
+            create_event(ME),
             damage_event(ME, RIVAL, 30),
             kill_event(ME, RIVAL, 45),
         ]
@@ -57,6 +62,7 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
     def test_early_skirmisher_on_fast_contact_without_quick_kill(self):
         events = [
             match_start(),
+            create_event(ME),
             damage_event(ME, RIVAL, 30),
         ]
 
@@ -65,29 +71,22 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
         self.assertFalse(result["quick_kill"])
         self.assertEqual(result["tempo_bucket"], "Early Skirmisher")
 
-    def test_quick_gear_striker_on_short_delay(self):
-        events = [match_start(), damage_event(ME, RIVAL, 200)]
+    def test_bucket_assignment_by_contact_delay(self):
+        cases = [
+            ("quick_gear_striker_short_delay", 200, "Quick-Gear Striker"),
+            ("calculated_pusher_moderate_delay", 450, "Calculated Pusher"),
+            ("slow_roll_patient_long_delay", 900, "Slow-Roll Patient"),
+        ]
+        for name, delay_seconds, expected_bucket in cases:
+            with self.subTest(case=name):
+                events = [match_start(), create_event(ME), damage_event(ME, RIVAL, delay_seconds)]
 
-        result = compute_time_to_first_contact_from_events(ME, events)
+                result = compute_time_to_first_contact_from_events(ME, events)
 
-        self.assertEqual(result["tempo_bucket"], "Quick-Gear Striker")
-
-    def test_calculated_pusher_on_moderate_delay(self):
-        events = [match_start(), damage_event(ME, RIVAL, 450)]
-
-        result = compute_time_to_first_contact_from_events(ME, events)
-
-        self.assertEqual(result["tempo_bucket"], "Calculated Pusher")
-
-    def test_slow_roll_patient_on_long_delay(self):
-        events = [match_start(), damage_event(ME, RIVAL, 900)]
-
-        result = compute_time_to_first_contact_from_events(ME, events)
-
-        self.assertEqual(result["tempo_bucket"], "Slow-Roll Patient")
+                self.assertEqual(result["tempo_bucket"], expected_bucket)
 
     def test_slow_roll_patient_when_no_contact_at_all(self):
-        events = [match_start()]
+        events = [match_start(), create_event(ME)]
 
         result = compute_time_to_first_contact_from_events(ME, events)
 
@@ -95,7 +94,18 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
         self.assertEqual(result["tempo_bucket"], "Slow-Roll Patient")
 
     def test_none_when_match_never_started(self):
-        events = [damage_event(ME, RIVAL, 30)]
+        events = [create_event(ME), damage_event(ME, RIVAL, 30)]
+
+        result = compute_time_to_first_contact_from_events(ME, events)
+
+        self.assertIsNone(result)
+
+    def test_none_when_player_never_appears_in_match(self):
+        """The bug fix: a match the player never played shouldn't count as
+        a Slow-Roll Patient reading just because there's no contact from
+        them - telemetry caching is shared, so unrelated matches sit in
+        the same directory."""
+        events = [match_start(), create_event(RIVAL), damage_event(RIVAL, "account.someone_else", 20)]
 
         result = compute_time_to_first_contact_from_events(ME, events)
 
@@ -104,6 +114,7 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
     def test_ignores_self_damage_and_environmental_damage(self):
         events = [
             match_start(),
+            create_event(ME),
             damage_event(ME, ME, 10),
             kill_event(ME, RIVAL, 40),
         ]
@@ -115,6 +126,7 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
     def test_ignores_damage_against_bots(self):
         events = [
             match_start(),
+            create_event(ME),
             damage_event(ME, RIVAL, 15, victim_type="user_ai"),
             damage_event(ME, RIVAL, 250),
         ]
@@ -126,6 +138,7 @@ class TestComputeTimeToFirstContact(unittest.TestCase):
     def test_kill_outside_quick_kill_window_does_not_count(self):
         events = [
             match_start(),
+            create_event(ME),
             damage_event(ME, RIVAL, 10),
             kill_event(ME, RIVAL, 200),
         ]
@@ -148,19 +161,22 @@ class TestComputeTempoSignal(unittest.TestCase):
             json.dump(events, f)
 
     def test_aggregates_most_common_bucket_across_matches(self):
-        self._write_match("match1", [match_start(), damage_event(ME, RIVAL, 900)])
-        self._write_match("match2", [match_start(), damage_event(ME, RIVAL, 950)])
-        self._write_match("match3", [match_start(), damage_event(ME, RIVAL, 30), kill_event(ME, RIVAL, 40)])
+        for i in range(6):
+            self._write_match(f"slow-{i}", [match_start(), create_event(ME), damage_event(ME, RIVAL, 900)])
+        for i in range(2):
+            self._write_match(f"hot-{i}", [match_start(), create_event(ME), damage_event(ME, RIVAL, 30), kill_event(ME, RIVAL, 40)])
 
         signal = compute_tempo_signal(ME, telemetry_dir=self.tmpdir.name)
 
         self.assertEqual(signal["tempo_tag"], "Slow-Roll Patient")
-        self.assertEqual(signal["matches_analyzed"], 3)
-        self.assertEqual(signal["matches_with_contact"], 3)
+        self.assertEqual(signal["matches_analyzed"], 8)
+        self.assertEqual(signal["matches_with_contact"], 8)
 
     def test_ties_break_toward_faster_bucket(self):
-        self._write_match("match1", [match_start(), damage_event(ME, RIVAL, 900)])
-        self._write_match("match2", [match_start(), damage_event(ME, RIVAL, 30), kill_event(ME, RIVAL, 40)])
+        for i in range(4):
+            self._write_match(f"slow-{i}", [match_start(), create_event(ME), damage_event(ME, RIVAL, 900)])
+        for i in range(4):
+            self._write_match(f"hot-{i}", [match_start(), create_event(ME), damage_event(ME, RIVAL, 30), kill_event(ME, RIVAL, 40)])
 
         signal = compute_tempo_signal(ME, telemetry_dir=self.tmpdir.name)
 
@@ -171,6 +187,25 @@ class TestComputeTempoSignal(unittest.TestCase):
 
         self.assertIsNone(signal["tempo_tag"])
         self.assertEqual(signal["matches_analyzed"], 0)
+
+    def test_no_tempo_tag_below_minimum_matches(self):
+        for i in range(7):
+            self._write_match(f"hot-{i}", [match_start(), create_event(ME), damage_event(ME, RIVAL, 30), kill_event(ME, RIVAL, 40)])
+
+        signal = compute_tempo_signal(ME, telemetry_dir=self.tmpdir.name)
+
+        self.assertIsNone(signal["tempo_tag"])
+        self.assertEqual(signal["matches_analyzed"], 7)
+
+    def test_excludes_matches_the_player_never_played(self):
+        for i in range(8):
+            self._write_match(f"mine-{i}", [match_start(), create_event(ME), damage_event(ME, RIVAL, 30), kill_event(ME, RIVAL, 40)])
+        self._write_match("unrelated-match", [match_start(), create_event(RIVAL), damage_event(RIVAL, "account.other", 20)])
+
+        signal = compute_tempo_signal(ME, telemetry_dir=self.tmpdir.name)
+
+        self.assertEqual(signal["matches_analyzed"], 8)
+        self.assertEqual(signal["tempo_tag"], "Hot-Drop Headhunter")
 
 
 if __name__ == '__main__':

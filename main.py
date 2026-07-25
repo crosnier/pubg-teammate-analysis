@@ -14,8 +14,8 @@ from utils.display_bot_stats import render_bot_summary
 from api.bot_index import update_bot_index
 from utils.last_match_brief import find_latest_match_for_player, compute_last_match_brief
 from utils.display_last_match_brief import render_last_match_brief
-from utils.tempo_signal import compute_tempo_signal
-from utils.display_tempo_signal import render_tempo_signal
+from utils.archetype_tag import compute_archetype_tag
+from utils.display_archetype_tag import render_archetype_tag
 import asyncio
 
 
@@ -59,10 +59,10 @@ async def _run(playername):
     combat_stats = compute_combat_stats(player_id)
     render_combat_stats(combat_stats)
 
-    # Display tempo signal (Archetype Tag) mined from cached telemetry
+    # Display Archetype Tag (tempo + range + weapon signature) mined from cached telemetry
     print("\n\n")
-    tempo_signal = compute_tempo_signal(player_id)
-    render_tempo_signal(tempo_signal)
+    archetype = compute_archetype_tag(player_id)
+    render_archetype_tag(archetype)
 
     # Last Match section: brief for this player, then bot detection for
     # whichever cached match is most recent overall (a stand-in for "your"
