@@ -20,6 +20,8 @@ where this is headed.
 
 ## Getting Started
 
+### macOS / dev machine
+
 1. Clone the repo and set up a virtual environment:
 
 ```bash
@@ -35,21 +37,46 @@ source .venv/bin/activate
 pip install -r requirements.txt  # python-dotenv, aiohttp
 ```
 
-3. Set up a `.env` file with your PUBG API key:
+3. Set up a `.env` file with your PUBG API key - copy `.env.example` to
+   `.env` and fill in `PUBG_API_KEY`.
 
+4. Confirm the environment is healthy:
+
+```bash
+python doctor.py
 ```
-PUBG_API_KEY=your_api_key_here
 
-# Optional: default rate limit (requests/minute) for /players and /seasons
-# calls, used until the API's response headers take over. Defaults to 10.
-PUBG_RATE_LIMIT_PER_MINUTE=10
-```
-
-4. Run it against a player name:
+5. Run it against a player name:
 
 ```bash
 python main.py PlayerName
 ```
+
+### Windows / live-test machine
+
+There's no dev environment on Windows - just a cold `git pull` of `main`.
+One script handles the rest:
+
+```powershell
+git pull
+.\setup.ps1
+```
+
+`setup.ps1` creates `.venv`, installs dependencies, creates `.env` from
+`.env.example` if it doesn't exist yet, and runs `doctor.py` at the end to
+confirm everything (Python version, dependencies, `.env`, data directories,
+and a live PUBG API heartbeat) is actually working before you run
+`main.py`.
+
+If PowerShell blocks the script from running (`cannot be loaded because
+running scripts is disabled on this system`), run it with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File setup.ps1
+```
+
+Re-run `python doctor.py` any time to re-check the environment without
+redoing setup.
 
 ## How It Works
 
@@ -66,6 +93,8 @@ main.py
 
 ```
 ├── main.py                 # CLI entry point
+├── doctor.py                # Environment health check (Python, deps, .env, API heartbeat)
+├── setup.ps1                # One-click Windows setup (venv, deps, .env, doctor)
 ├── api/                     # PUBG API client: player stats, telemetry, player index, rate limiter
 ├── utils/                   # Display formatting + I/O helpers
 ├── tests/                   # Unit tests
@@ -74,6 +103,7 @@ main.py
 ├── match-telemetry/          # Cached raw telemetry JSON (local only, gitignored)
 ├── playerstats/              # Cached player stat JSON (local only, gitignored)
 ├── player-index.json         # Known player lookup (local only, gitignored)
+├── .env.example              # Template for local .env (PUBG_API_KEY, tunables)
 └── requirements.txt
 ```
 
