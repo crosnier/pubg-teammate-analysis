@@ -42,7 +42,7 @@ powershell -ExecutionPolicy Bypass -File setup.ps1
 Then profile a player:
 
 ```powershell
-python main.py PlayerName
+python solo.py PlayerName
 ```
 
 Or a whole squad at once (2+ players, you first):
@@ -50,6 +50,9 @@ Or a whole squad at once (2+ players, you first):
 ```powershell
 python squad.py YourName Teammate1 Teammate2
 ```
+
+Want the full raw stats dump (every stat, full match history, full combat
+breakdown) instead of the narrative profile? Use `python main.py PlayerName`.
 
 Re-run `python doctor.py` any time to re-check your environment without
 redoing setup.

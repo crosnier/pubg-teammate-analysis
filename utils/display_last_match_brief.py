@@ -3,7 +3,7 @@
 # ==============================
 
 
-def render_last_match_brief(playername, brief, played_with_you=None):
+def render_last_match_brief(playername, brief, played_with_you=None, show_squad_status=True, killer_intel_line=None):
     print("=============================")
     print(f"📋 Last Match Brief - {playername}")
     print("=============================")
@@ -26,8 +26,11 @@ def render_last_match_brief(playername, brief, played_with_you=None):
     else:
         print("Died To    : Survived to match end")
 
+    if killer_intel_line:
+        print(f"Who Killed You: {killer_intel_line}")
+
     squad_status = brief.get("squad_status")
-    if squad_status:
+    if show_squad_status and squad_status:
         print("Squad Status at the time:")
         for teammate in squad_status:
             if teammate["status"] == "alive":

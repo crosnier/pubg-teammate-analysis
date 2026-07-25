@@ -64,7 +64,10 @@ class TestComputeLastMatchBrief(unittest.TestCase):
         self.assertEqual(brief["time_alive_seconds"], 300)
         self.assertEqual(brief["kill_count"], 0)
         self.assertIsNone(brief["most_used_weapon"])
-        self.assertEqual(brief["death_info"], {"killed_by": "Rival", "weapon": "AUG", "distance_m": 20.9})
+        self.assertEqual(
+            brief["death_info"],
+            {"killed_by": "Rival", "killer_account_id": KILLER, "weapon": "AUG", "distance_m": 20.9},
+        )
 
     def test_survivor_has_no_death_info_and_uses_match_end_time(self):
         events = [
