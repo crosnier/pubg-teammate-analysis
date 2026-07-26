@@ -1,7 +1,7 @@
 # ==============================
 # main CLI entry point
 # ==============================
-from api.player_stats import fetch_player_and_match_ids
+from api.player_stats import fetch_player_and_match_ids, PlayerNotFoundError
 from api.rate_limiter import player_api_queue
 from utils.display_stats_by_mode import render_ascii_table, load_player_stats
 from utils.display_match_history import display_match_history
@@ -26,6 +26,8 @@ import argparse
 async def run(playername):
     try:
         await _run(playername)
+    except PlayerNotFoundError as e:
+        print(f"[ERROR] {e}")
     finally:
         await player_api_queue.close()
 

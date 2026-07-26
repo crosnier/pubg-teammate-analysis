@@ -35,13 +35,15 @@ def render_squad_roster(roster):
     print("=============================================")
 
 
-def render_full_squad_cards(members, archetypes, headlines, combat_stats, drop_zone_lines=None, flow_lines=None):
+def render_full_squad_cards(members, archetypes, headlines, combat_stats, drop_zone_lines=None, flow_lines=None,
+                             pathing_lines=None):
     """Full per-player cards after the roster summary. Teammates render
     first, then "you" last regardless of argument order - the running
     user's own card is the one they already know, so it reads better as
     the closer than the opener."""
     drop_zone_lines = drop_zone_lines or {}
     flow_lines = flow_lines or {}
+    pathing_lines = pathing_lines or {}
     ordered = members[1:] + [members[0]]
     for i, member in enumerate(ordered):
         is_self = (i == len(ordered) - 1)
@@ -66,3 +68,8 @@ def render_full_squad_cards(members, archetypes, headlines, combat_stats, drop_z
                 print(drop_zone_line)
             if flow_line:
                 print(flow_line)
+
+        pathing_line = pathing_lines.get(key)
+        if pathing_line:
+            print()
+            print(pathing_line)

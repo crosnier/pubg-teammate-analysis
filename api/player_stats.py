@@ -22,10 +22,23 @@ BASE_URL = "https://api.pubg.com/shards/steam"
 TEAM_MODE_RELATIONSHIP_KEYS = {"matchesDuo", "matchesDuoFPP", "matchesSquad", "matchesSquadFPP"}
 
 
+class PlayerNotFoundError(Exception):
+    """Raised when the PUBG API has no player matching the given name -
+    misspelled, wrong platform, or genuinely doesn't exist. Callers should
+    catch this specifically (never a bare except) so a bad name fails
+    cleanly instead of crashing on an IndexError into an empty "data" list.
+    """
+    def __init__(self, playername):
+        self.playername = playername
+        super().__init__(f"No PUBG player found named '{playername}' - check the spelling.")
+
+
 async def fetch_player_stats(playername):
     # Get account ID from player name
     player_url = f"{BASE_URL}/players?filter[playerNames]={playername}"
     player_data = await player_api_queue.request("GET", player_url, headers=HEADERS)
+    if not player_data.get("data"):
+        raise PlayerNotFoundError(playername)
     player_id = player_data["data"][0]["id"]
 
     # Update the player index (no match_ids yet)

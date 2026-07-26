@@ -15,14 +15,17 @@ completely untouched.
 import argparse
 import asyncio
 
-from api.player_stats import fetch_player_and_match_ids
+from api.player_stats import fetch_player_and_match_ids, PlayerNotFoundError
 from api.rate_limiter import player_api_queue
 from api.telemetry_fetcher import fetch_telemetry_for_matches
 from utils.archetype_tag import compute_archetype_tag
 from utils.combat_stats import compute_combat_stats
 from utils.display_drop_zone import format_drop_zone_line, format_flow_line
+from utils.display_match_pathing import format_match_pathing_line
 from utils.drop_zone import compute_drop_zone_signal
 from utils.headline_number import compute_headline_number
+from utils.last_match_brief import find_latest_match_for_player
+from utils.match_pathing import compute_match_pathing
 from utils.match_scope import select_scoped_match_ids
 from utils.movement_flow import compute_flow_signal
 from utils.squad_roster import compute_squad_roster
@@ -40,10 +43,21 @@ async def _run(playernames):
     # Concurrent player-stats fetch across the squad - safe today since
     # api/rate_limiter.py's queue already serializes the actual HTTP calls
     # via an asyncio.Lock regardless of how many callers use it at once.
-    fetched = await asyncio.gather(*(fetch_player_and_match_ids(name) for name in playernames))
+    # return_exceptions=True so one unresolvable name doesn't take down the
+    # whole squad fetch - each result is checked individually below.
+    fetched = await asyncio.gather(
+        *(fetch_player_and_match_ids(name) for name in playernames),
+        return_exceptions=True,
+    )
 
     members = []
-    for name, (account_id, match_ids, team_mode_match_ids) in zip(playernames, fetched):
+    for name, result in zip(playernames, fetched):
+        if isinstance(result, PlayerNotFoundError):
+            print(f"[WARN] {result} - skipping '{name}'.")
+            continue
+        if isinstance(result, Exception):
+            raise result
+        account_id, match_ids, team_mode_match_ids = result
         print(f"[SUCCESS] Stats saved for '{name}' (account ID: {account_id})")
         members.append({
             "name": name,
@@ -51,6 +65,10 @@ async def _run(playernames):
             "match_ids": match_ids,
             "team_mode_match_ids": team_mode_match_ids,
         })
+
+    if len(members) < 2:
+        print(f"[ERROR] Need at least 2 resolvable players for a squad profile, got {len(members)}.")
+        return
 
     # One combined, deduplicated telemetry fetch for the whole squad - a
     # match two teammates played together only needs pulling once
@@ -61,7 +79,7 @@ async def _run(playernames):
     for m in members:
         all_match_ids.update(m["match_ids"])
     print()
-    print(f"[INFO] Fetching telemetry for {len(all_match_ids)} unique matches across {len(playernames)} players...")
+    print(f"[INFO] Fetching telemetry for {len(all_match_ids)} unique matches across {len(members)} players...")
     await fetch_telemetry_for_matches(list(all_match_ids))
 
     archetypes = {}
@@ -69,6 +87,7 @@ async def _run(playernames):
     combat_stats = {}
     drop_zone_lines = {}
     flow_lines = {}
+    pathing_lines = {}
     for i, m in enumerate(members):
         scoped = set(select_scoped_match_ids(m["match_ids"]))
         team_mode_scoped = set(select_scoped_match_ids(m["team_mode_match_ids"]))
@@ -85,11 +104,15 @@ async def _run(playernames):
         flow_signal = compute_flow_signal(m["account_id"], match_ids=scoped)
         flow_lines[m["name"]] = format_flow_line(flow_signal)
 
+        latest_match_id, latest_events = find_latest_match_for_player(m["account_id"], m["match_ids"])
+        pathing = compute_match_pathing(m["account_id"], latest_match_id, latest_events) if latest_match_id else None
+        pathing_lines[m["name"]] = format_match_pathing_line(pathing)
+
     roster = compute_squad_roster(members)
 
     print("\n\n")
     render_squad_roster(roster)
-    render_full_squad_cards(members, archetypes, headlines, combat_stats, drop_zone_lines, flow_lines)
+    render_full_squad_cards(members, archetypes, headlines, combat_stats, drop_zone_lines, flow_lines, pathing_lines)
 
 
 def main():
