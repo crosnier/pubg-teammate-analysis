@@ -29,9 +29,16 @@ def check_python_version(version_file=".python-version"):
     actual = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
     if expected is None:
         return True, f"Python {actual} (no .python-version to compare against)"
-    if actual == expected:
+    actual_major_minor = f"{sys.version_info.major}.{sys.version_info.minor}"
+    expected_major_minor = ".".join(expected.split(".")[:2])
+    if actual_major_minor == expected_major_minor:
         return True, f"Python {actual}"
-    return False, f"Python {actual}, expected {expected} (see .python-version)"
+    return False, (
+        f"Python {actual}, this project targets {expected_major_minor}.x "
+        f"(see .python-version) - a different patch version is fine, but "
+        f"a different major/minor version may not have all dependencies "
+        f"available"
+    )
 
 
 def check_virtual_env():

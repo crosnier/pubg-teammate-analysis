@@ -7,7 +7,8 @@ from utils.display_headline_number import render_headline_number
 from utils.display_last_match_brief import render_last_match_brief
 
 
-def render_solo_profile(playername, archetype, headline, combat_stats, coaching, brief, killer_intel_line=None):
+def render_solo_profile(playername, archetype, headline, combat_stats, coaching, brief,
+                         killer_intel_line=None, drop_zone_line=None, flow_line=None):
     print("=============================================")
     print(f"🧍 SOLO PROFILE - {playername}")
     print("=============================================")
@@ -25,6 +26,16 @@ def render_solo_profile(playername, archetype, headline, combat_stats, coaching,
             print(coaching["coaching_line"])
         if coaching["map_line"]:
             print(coaching["map_line"])
+
+    if drop_zone_line or flow_line:
+        print()
+        print("=============================")
+        print("🪂 Drop Zone + Flow")
+        print("=============================")
+        if drop_zone_line:
+            print(drop_zone_line)
+        if flow_line:
+            print(flow_line)
 
     if brief:
         print()

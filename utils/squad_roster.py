@@ -13,6 +13,7 @@ directly from that member's own (range, temperament) pair, not a
 hand-authored combo table - each member is classified independently, then
 the squad-level text is composed from those classifications.
 """
+from utils.squad_drop_zone import compute_squad_drop_zone_consolidation
 from utils.squad_read import compute_engagement_lead_stats, format_engagement_lead
 
 TELEMETRY_DIR = "match-telemetry"
@@ -153,7 +154,8 @@ def compute_squad_roster(members, telemetry_dir=TELEMETRY_DIR):
     coverage/distribution read and the single strongest bolstered line.
 
     members: list of {"name", "account_id", "archetype", "match_ids"},
-    members[0] is "you".
+    members[0] is "you". "drop_zone_signal" is optional per member - the
+    drop-zone consolidation lines are simply omitted if absent.
     """
     roster_rows = [
         {
@@ -164,8 +166,12 @@ def compute_squad_roster(members, telemetry_dir=TELEMETRY_DIR):
         for i, m in enumerate(members)
     ]
 
+    drop_zone_consolidation = compute_squad_drop_zone_consolidation(members)
+
     return {
         "roster_rows": roster_rows,
         "coverage_summary": compute_squad_coverage_summary(members),
         "bolstered_line": compute_best_engagement_lead(members, telemetry_dir=telemetry_dir),
+        "drop_zone_best_fit_line": drop_zone_consolidation["best_fit_line"],
+        "drop_zone_change_it_up_line": drop_zone_consolidation["change_it_up_line"],
     }

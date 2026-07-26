@@ -20,8 +20,11 @@ from api.rate_limiter import player_api_queue
 from api.telemetry_fetcher import fetch_telemetry_for_matches
 from utils.archetype_tag import compute_archetype_tag
 from utils.combat_stats import compute_combat_stats
+from utils.display_drop_zone import format_drop_zone_line, format_flow_line
+from utils.drop_zone import compute_drop_zone_signal
 from utils.headline_number import compute_headline_number
 from utils.match_scope import select_scoped_match_ids
+from utils.movement_flow import compute_flow_signal
 from utils.squad_roster import compute_squad_roster
 from utils.display_squad_roster import render_squad_roster, render_full_squad_cards
 
@@ -64,6 +67,8 @@ async def _run(playernames):
     archetypes = {}
     headlines = {}
     combat_stats = {}
+    drop_zone_lines = {}
+    flow_lines = {}
     for i, m in enumerate(members):
         scoped = set(select_scoped_match_ids(m["match_ids"]))
         team_mode_scoped = set(select_scoped_match_ids(m["team_mode_match_ids"]))
@@ -74,11 +79,17 @@ async def _run(playernames):
         headlines[m["name"]] = compute_headline_number(m["account_id"], match_ids=scoped, possessive=possessive)
         combat_stats[m["name"]] = compute_combat_stats(m["account_id"], match_ids=scoped)
 
+        drop_zone_signal = compute_drop_zone_signal(m["account_id"], match_ids=scoped)
+        m["drop_zone_signal"] = drop_zone_signal
+        drop_zone_lines[m["name"]] = format_drop_zone_line(drop_zone_signal)
+        flow_signal = compute_flow_signal(m["account_id"], match_ids=scoped)
+        flow_lines[m["name"]] = format_flow_line(flow_signal)
+
     roster = compute_squad_roster(members)
 
     print("\n\n")
     render_squad_roster(roster)
-    render_full_squad_cards(members, archetypes, headlines, combat_stats)
+    render_full_squad_cards(members, archetypes, headlines, combat_stats, drop_zone_lines, flow_lines)
 
 
 def main():

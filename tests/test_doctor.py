@@ -32,13 +32,23 @@ class TestCheckPythonVersion(unittest.TestCase):
 
         self.assertTrue(ok)
 
-    def test_fails_when_version_mismatches(self):
+    def test_fails_when_major_minor_mismatches(self):
         path = self._write_version_file("99.99.99")
 
         ok, message = doctor.check_python_version(version_file=path)
 
         self.assertFalse(ok)
-        self.assertIn("99.99.99", message)
+        self.assertIn("99.99", message)
+
+    def test_passes_when_only_patch_version_differs(self):
+        # A different patch/micro version shouldn't fail the check - only
+        # a major/minor mismatch risks missing dependency compatibility.
+        actual_major_minor = f"{sys.version_info.major}.{sys.version_info.minor}"
+        path = self._write_version_file(f"{actual_major_minor}.999")
+
+        ok, message = doctor.check_python_version(version_file=path)
+
+        self.assertTrue(ok)
 
     def test_passes_when_no_version_file_present(self):
         ok, message = doctor.check_python_version(version_file=os.path.join(self.tmpdir.name, "missing"))

@@ -140,37 +140,209 @@ Issue: #44.
   since the actual requirement is human-readable descriptive text, not
   literal reproduction of PUBG's in-game grid jargon.
 
-**Not yet done** (in priority order for resuming):
-1. Fix Kameshki/Stalber placement (flagged above).
-2. Write the actual classification module: given a real (x, y) landing
-   coordinate, return the nearest POI, or a "between X and Y" /
-   "near the edge of X, [compass direction]" description when ambiguous
-   (near a boundary between two POIs' zones of influence). No code for
-   this exists yet - `map_regions_data.py` is raw material only.
-3. Movement-flow mining from `LogPlayerPosition` - not started at all,
-   no research done yet on what a useful "flow" summary looks like from
-   this event type.
-4. The "unrecognized map" graceful-fallback mechanism (check `mapName`
-   against `MAP_SIZE_CM`'s keys - cheap, do this early in the
-   classification module, not as an afterthought).
-5. Repeat the whole research process (official map image + POI reading +
-   telemetry-density validation) for the other maps that show up in our
-   cache, in priority order by real match volume: `Tiger_Main` (Taego,
-   36 of last 300 sampled), `Desert_Main` (Miramar, 31), `Neon_Main`
-   (Rondo, 25 - also still needs `MAP_SIZE_CM` verification, see the
-   commented-out line in `map_regions_data.py`), `DihorOtok_Main`
-   (Vikendi, 17), `Savage_Main` (Sanhok, 8), `Summerland_Main` (Karakin,
-   6).
-6. The regeneration script/mechanism itself (repeatable process for
-   rebuilding a map's dataset when PUBG changes something) - the process
-   above was done ad hoc this session; needs to be captured as an
-   actual reusable tool, not just repeated by hand each time.
-7. Wire into `solo.py` (smallest correct slice, per the original plan).
-8. Reuse in `squad.py`'s per-member cards.
-9. Squad-level "best fit"/"change it up" consolidation - still fully
-   undesigned, per the original scope above.
-10. Tests + live validation for whatever ships first (the classification
-    module, at minimum, needs unit tests before it's trusted).
+## Progress as of 2026-07-25 (part 2, same day - classifier + solo.py wiring)
 
-No code has been wired into `solo.py`, `squad.py`, or `main.py` yet -
-this is all still additive/inert data + research, safe to resume from.
+1. **Kameshki/Stalber resolved.** Re-cropped tight, high-zoom regions of
+   the official map image and located each town's real building cluster
+   directly - both existing pixel estimates land within ~10px of the
+   true centroid, i.e. correctly placed. The lower landing counts are
+   real gameplay signal (small, remote, mountainous NE towns - genuinely
+   less popular drops), not a data error. `NEEDS_REVIEW` flags removed;
+   full reasoning kept in `map_regions_data.py`'s docstring.
+2. **Classification module built**: `utils/drop_zone.py`.
+   `classify_landing(x, y, poi_coords)` does nearest/second-nearest POI
+   lookup and returns a "near X" / "near the edge of X, <compass>" /
+   "between X and Y" description depending on how close the two nearest
+   candidates are. Ambiguity thresholds (`BETWEEN_RATIO=1.15`,
+   `EDGE_RATIO=1.5`) are **not guessed** - calibrated against 15,067 real
+   `LogParachuteLanding` events sampled from 204 cached Baltic_Main
+   matches (see module docstring for the full ratio percentile
+   breakdown). Confirmed ambiguity is genuinely the minority case
+   (~75%+ of real landings are unambiguous) before picking the cutoffs.
+   `compute_drop_zone_signal()` aggregates per-match reads into a
+   most-frequent-zone read, same mode-based pattern as
+   `compute_tempo_signal`, gated at `MIN_MATCHES_FOR_SIGNAL=8`.
+3. **"Unrecognized map" fallback done**: `MAP_POI_LOOKUP` is the single
+   gate for map support; an unsupported `mapName` returns a
+   `supported_map: False` reading instead of crashing or guessing, and
+   `utils/display_drop_zone.py` renders that as "map not yet supported
+   for tracking" rather than showing nothing silently.
+4. **12 unit tests** in `tests/test_drop_zone.py` (confident/edge/between
+   classification math, compass direction sign convention, unsupported-
+   map fallback, min-matches gating, mode-aggregation across matches).
+   Full suite (161 tests) still green.
+5. **Live-validated against real cached telemetry** (not just unit
+   tests): pulled two real accounts' actual Baltic_Main matches and
+   inspected per-match + aggregate output by hand. Distances were sane
+   (e.g. two School landings at 52.4m/48.6m from the POI center - a
+   real hot-drop), the Sosnovka Island/Military Base pair correctly
+   reads as "between"/"edge" most of the time (they're genuinely
+   adjacent POIs on a small island - the ambiguity model is doing the
+   right thing there, not misfiring), and the min-matches gate correctly
+   returned no aggregate read for a 7-match account while a separate
+   18-match account got a confident "near School" read (6/16 matches).
+6. **Wired into `solo.py`**: a new "🪂 Drop Zone" section on the profile,
+   computed via `compute_drop_zone_signal` + `format_drop_zone_line`,
+   shown only when there's a real read or an explicit "not yet
+   supported" note - omitted entirely below the match-count bar, same
+   omission convention as the Coaching Note section.
+
+## Progress as of 2026-07-25 (part 3, same day - movement flow + solo.py wiring)
+
+1. **Flow signal built**: `utils/movement_flow.py`. Researched
+   `LogPlayerPosition` (fires every ~10 in-game seconds per player while
+   alive) and `LogGameStatePeriodic` (same cadence, carries
+   `safetyZonePosition` + `safetyZoneRadius`) before designing anything -
+   confirmed both are dense and easy to align by `elapsedTime`. Flow is
+   **map-agnostic by design**: it only measures a player's distance to
+   the safe zone's own center as a fraction of the zone's own radius, so
+   unlike Drop Zone it needs no named-POI data and already works on every
+   map, including ones Drop Zone can't classify yet.
+2. **Thresholds calibrated, not guessed**: sampled 6,570 real
+   (player, match) medians across 80 cached matches (any map). Tertile
+   split of the real distribution (p33=0.256, p67=0.457) set
+   `ZONE_CENTER_MAX_FRACTION=0.26` / `BALANCED_MAX_FRACTION=0.46` -
+   same calibration discipline as Drop Zone's ratio thresholds and the
+   original range_signal.py tertiles. `compute_flow_signal()` aggregates
+   into a most-frequent-bucket tag (Zone Center / Balanced Rotator /
+   Zone Edge), same mode-based pattern as tempo/drop-zone, gated at
+   `MIN_MATCHES_FOR_SIGNAL=8`.
+3. **8 unit tests** in `tests/test_movement_flow.py`, including a test
+   that specifically pins down the "most recent zone snapshot at or
+   before this position's timestamp" selection logic against three
+   candidate snapshots that would each produce a different (wrong)
+   bucket if the selection logic were off by one. Full suite (169 tests)
+   green.
+4. **Live-validated against real telemetry**: ran `compute_flow_signal`
+   against a real 22-match account - got a non-degenerate spread across
+   all three buckets (7/9/6), consistent with tertile-calibrated cutoffs
+   by construction, not a crash or an all-one-bucket degenerate result.
+5. **Wired into `solo.py`**: merged into the same section as Drop Zone,
+   now headed "🪂 Drop Zone + Flow" (matching the capability's original
+   name) - full real end-to-end render smoke-tested against real cached
+   telemetry (not synthetic fixtures) end to end through
+   `render_solo_profile`, output confirmed readable and correctly
+   formatted.
+
+## Progress as of 2026-07-25 (part 4, same day - regeneration tool + squad.py wiring)
+
+1. **Regeneration tooling built**: `utils/map_calibration.py` +
+   `regenerate_map_data.py` (root-level CLI, same convention as
+   `solo.py`/`squad.py`/`doctor.py`). Automates the two mechanical steps
+   of the Erangel research process - pixel->world conversion
+   (`convert_pixels_to_world`, generalized out of the old
+   Erangel-only `erangel_poi_world_coordinates`) and telemetry-density
+   validation (`validate_landing_density`, generalized out of the ad hoc
+   calibration scripts used earlier this session), plus automatic
+   NEEDS_REVIEW flagging (>50% below that map's median POI count - the
+   same standard that originally caught Kameshki).
+   **Deliberately NOT automated**: reading POI label positions off the
+   map image in the first place - that's still a human/vision-capable
+   assistant visually locating each town's building cluster, same as
+   this session's Erangel work. Auto-detecting label positions via
+   OCR/CV was considered and explicitly not attempted - real effort of
+   its own, not a few-line addition, and risky to get silently wrong.
+   `--map` gates on `MAP_SIZE_CM` having a verified entry (refuses Rondo
+   until that's confirmed) rather than guessing a coordinate range.
+2. **6 unit tests** in `tests/test_map_calibration.py` (pixel scaling,
+   radius inclusion/exclusion, per-map isolation, outlier flagging).
+   Smoke-tested the CLI end-to-end with a synthetic map to confirm the
+   full pixel -> world -> validation round-trip produces sane output
+   before considering it done. Full suite: 175 tests, green.
+3. **Wired into `squad.py`**: same per-player `compute_drop_zone_signal`
+   / `compute_flow_signal` calls now run once per teammate inside the
+   existing per-member loop (same pattern as Headline Number/K/D),
+   rendered as each teammate's own "🪂 Drop Zone + Flow" card via
+   `render_full_squad_cards`'s new `drop_zone_lines`/`flow_lines`
+   params. Live-validated end-to-end against two real cached accounts
+   (26 and 18 matches) - each teammate correctly got their own
+   independent read (one "near Pochinki", one "near School", both
+   "Balanced Rotator"), no cross-contamination between members.
+
+## Progress as of 2026-07-25 (part 5, same day - squad-level consolidation)
+
+1. **"Best fit" / "change it up" designed and built**:
+   `utils/squad_drop_zone.py`. Votes are grouped at the POI level (not
+   exact ambiguity phrasing) - a member reading "near the edge of
+   Pochinki" and another reading "between Pochinki and School" both
+   count toward Pochinki, since both are genuinely gravitating there.
+   "Best fit" requires `MIN_MEMBERS_FOR_CONSENSUS=2` members to
+   independently converge on the same POI before saying anything -
+   below that there's no real consensus, so it stays silent rather than
+   crowning an arbitrary winner from an all-tied vote (same
+   don't-overreach standard as every other signal's confidence gate).
+   "Change it up" picks the real named POI farthest from the "best fit"
+   POI, restricted to POIs at or above the map's *median* real landing
+   count (reusing `ERANGEL_LANDING_VALIDATION_400M`) - so it's a
+   genuinely different spot, never a token suggestion of a dead corner
+   nobody actually plays.
+2. **6 unit tests** in `tests/test_squad_drop_zone.py`, including one
+   that specifically confirms Zharki (23 real landings, the map's most
+   extreme dead corner) never gets suggested as "change it up" even when
+   it would otherwise be the geographically farthest option. Full suite:
+   181 tests, green.
+3. **Wired into `squad_roster.py`/`squad.py`**: `compute_squad_roster`
+   now also returns `drop_zone_best_fit_line` /
+   `drop_zone_change_it_up_line`, rendered in the Squad Roster header
+   block (alongside the existing coverage summary / bolstered line).
+   Live-validated against 3 real cached accounts (26/18/14 matches): 2
+   of 3 genuinely converged on Pochinki in their real per-player data,
+   correctly detected as "Best fit: Pochinki - 2 of 3 squad members
+   already tend to land there," with "Change it up: try Sosnovka
+   Military Base" (4,390 real landings, well above median, on the
+   opposite side of the map from Pochinki) - not a guess, an emergent
+   result of real per-player signals actually overlapping.
+
+**This closes the original ask from the top of this doc.** Both per-
+player halves (Drop Zone naming, zone-relative Flow) and the squad-level
+consolidation are built, calibrated against real data (never guessed
+thresholds), unit-tested, and live-validated end-to-end in both `solo.py`
+and `squad.py`.
+
+## Progress as of 2026-07-26 (map data completed, cross-map bug fixed)
+
+1. **All 4 ranked-rotation maps done**: Erangel, Miramar, Taego, and Rondo
+   all have real, validated POI data. Vikendi and Sanhok are done too - 6
+   of 9 currently-playable maps total (per PUBG's official Map Service
+   Report, Update 41.2). Rondo needed its own coordinate-range
+   verification pass first (no official source states it in cm; confirmed
+   empirically against 112 real cached matches instead - see
+   `docs/design/map-poi-discovery-procedure.md`, which documents the full
+   repeatable process for any future map).
+2. **Karakin, Deston, Paramo intentionally not started** - deprioritized
+   in favor of bug fixes on the existing capability (see below), not
+   forgotten. Camp Jackal and Haven are discontinued (not in PUBG's
+   current rotation) and are permanently out of scope - annotated in
+   `map_regions_data.py`, no POI work planned ever.
+3. **Real bug found and fixed: POI names collide across maps.** "School"
+   exists on both Erangel and Taego; "Ruins" and "Quarry" exist on both
+   Erangel and Sanhok; "Prison" exists on both Erangel and Miramar. Before
+   this fix, `zone_key` was just the bare POI name, so a player's
+   aggregate `zone_counts` (and a squad's consensus vote) could silently
+   merge two physically different locations on two different maps into
+   one count just because the names matched - a real correctness bug,
+   not hypothetical, present since Taego was added and worse with every
+   map since. Fixed by having `compute_landing_read_from_events`
+   (drop_zone.py) qualify every `zone_key` as `"<map_name>||<rest>"`;
+   `squad_drop_zone.py`'s voting now keys on `(map_name, poi)` pairs
+   instead of bare POI names. Covered by new tests in both
+   `test_drop_zone.py` and `test_squad_drop_zone.py` that specifically
+   construct the collision scenario and assert it's no longer merged.
+4. **`squad_drop_zone.py` generalized off Erangel-only.** "Best fit"
+   already worked for any map by construction (it just tallies whichever
+   POI name a member's read converged on); "Change it up" was the
+   actually-hardcoded half (`erangel_poi_world_coordinates()` /
+   `ERANGEL_LANDING_VALIDATION_400M` called directly). Fixed by adding
+   `MAP_LANDING_VALIDATION_400M` (map_regions_data.py) as a per-map
+   registry paralleling drop_zone.py's `MAP_POI_LOOKUP`, and having the
+   consolidation look up whichever map the winning vote actually came
+   from. New test confirms "change it up" now produces a real suggestion
+   for a non-Erangel map (Rondo) instead of silently returning `None`.
+
+**What's left, not urgent:** Karakin/Deston/Paramo POI data (mechanical,
+per the discovery procedure doc, once prioritized); nothing else open on
+this capability's design or engineering.
+
+`solo.py` and `squad.py` both call into Drop Zone + Flow, including the
+squad-level consolidation now; `main.py` is untouched (by design - it's
+the raw-stats view, narrative signals live in solo.py/squad.py only).

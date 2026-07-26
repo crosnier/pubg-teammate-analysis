@@ -58,7 +58,10 @@ $doctorExitCode = $LASTEXITCODE
 
 if ($doctorExitCode -eq 0) {
     Write-Host ""
-    Write-Host "Setup complete. Run: python main.py <playername>" -ForegroundColor Green
+    Write-Host "Setup complete. Try it out:" -ForegroundColor Green
+    Write-Host "  python solo.py PlayerName" -ForegroundColor Green
+    Write-Host "  python squad.py YourName Teammate1 Teammate2" -ForegroundColor Green
+    Write-Host "(python main.py PlayerName gives the full raw stats dump instead)" -ForegroundColor Green
 } else {
     Write-Host ""
     Write-Host "Setup finished but the doctor found issues - see above." -ForegroundColor Yellow
