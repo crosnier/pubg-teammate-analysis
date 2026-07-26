@@ -1,10 +1,9 @@
 # ==============================
 # utils/range_signal.py
 # ==============================
-import glob
-import json
-import os
 import statistics
+
+from utils.telemetry_cache import select_telemetry_events
 
 TELEMETRY_DIR = "match-telemetry"
 
@@ -23,15 +22,6 @@ MID_RANGE_MAX_METERS = 33
 MIN_KILLS_FOR_SIGNAL = 8
 
 
-def _load_telemetry_files(match_ids=None, telemetry_dir=TELEMETRY_DIR):
-    for path in glob.glob(os.path.join(telemetry_dir, "*-telemetry.json")):
-        match_id = os.path.basename(path).replace("-telemetry.json", "")
-        if match_ids is not None and match_id not in match_ids:
-            continue
-        with open(path, "r") as f:
-            yield json.load(f)
-
-
 def _bucket_for_distance(median_distance_m):
     if median_distance_m <= CLOSE_RANGE_MAX_METERS:
         return "Close-Range"
@@ -40,17 +30,21 @@ def _bucket_for_distance(median_distance_m):
     return "Long-Range"
 
 
-def compute_range_signal(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR):
+def compute_range_signal(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR, events_by_match=None):
     """Range-axis half of the Archetype Tag: median real-player kill distance.
 
     Only kills against real players count (bots/NPCs have no bearing on a
     range preference). Requires MIN_KILLS_FOR_SIGNAL kills before a bucket
     is assigned, matching the design doc's confidence-gating philosophy -
     a small sample shouldn't produce a confident-sounding label.
+
+    events_by_match, if given (see utils/telemetry_cache.py), reuses
+    telemetry already parsed by a caller sharing it across multiple
+    signals (see archetype_tag.py) instead of re-reading from disk.
     """
     distances = []
 
-    for events in _load_telemetry_files(match_ids, telemetry_dir):
+    for events in select_telemetry_events(match_ids, telemetry_dir, events_by_match):
         for event in events:
             if event.get("_T") != "LogPlayerKillV2" or event.get("isSuicide"):
                 continue

@@ -1,12 +1,10 @@
 # ==============================
 # utils/tempo_signal.py
 # ==============================
-import glob
-import json
-import os
 from datetime import datetime
 
 from utils.last_match_brief import player_present_in_match
+from utils.telemetry_cache import select_telemetry_events
 
 TELEMETRY_DIR = "match-telemetry"
 
@@ -37,15 +35,6 @@ TEMPO_BUCKET_ORDER = [
     "Calculated Pusher",
     "Slow-Roll Patient",
 ]
-
-
-def _load_telemetry_files(match_ids=None, telemetry_dir=TELEMETRY_DIR):
-    for path in glob.glob(os.path.join(telemetry_dir, "*-telemetry.json")):
-        match_id = os.path.basename(path).replace("-telemetry.json", "")
-        if match_ids is not None and match_id not in match_ids:
-            continue
-        with open(path, "r") as f:
-            yield json.load(f)
 
 
 def _parse_timestamp(value):
@@ -119,16 +108,20 @@ def compute_time_to_first_contact_from_events(account_id, telemetry_events):
     return {"contact_seconds": contact_seconds, "quick_kill": quick_kill, "tempo_bucket": bucket}
 
 
-def compute_tempo_signal(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR):
+def compute_tempo_signal(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR, events_by_match=None):
     """Aggregate the tempo half of the Archetype Tag across cached matches.
 
     Overall tag is the most frequent per-match bucket, ties broken by
     bucket priority (fastest-tempo bucket first) rather than arbitrarily.
     Requires MIN_MATCHES_FOR_SIGNAL matches before naming a tag - a
     single match is not a reliable read on tempo.
+
+    events_by_match, if given (see utils/telemetry_cache.py), reuses
+    telemetry already parsed by a caller sharing it across multiple
+    signals (see archetype_tag.py) instead of re-reading from disk.
     """
     per_match = []
-    for events in _load_telemetry_files(match_ids, telemetry_dir):
+    for events in select_telemetry_events(match_ids, telemetry_dir, events_by_match):
         reading = compute_time_to_first_contact_from_events(account_id, events)
         if reading is not None:
             per_match.append(reading)

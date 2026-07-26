@@ -7,6 +7,7 @@ import json
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from utils.archetype_tag import compute_archetype_tag
 
@@ -127,6 +128,25 @@ class TestComputeArchetypeTag(unittest.TestCase):
         self.assertEqual(result["range"]["range_bucket"], "Close-Range")
         self.assertEqual(result["weapon"]["signature"], "AR")
         self.assertEqual(result["range"]["kills_analyzed"], 8)
+
+    def test_each_match_file_is_parsed_only_once_across_all_three_signals(self):
+        # Issue #30: tempo/range/weapon each used to independently re-open
+        # and re-parse the same match files. Wrap json.load (the shared
+        # parse step in utils/telemetry_cache.py) to count real parses -
+        # with 8 matches feeding all three signals, this must be 8, not 24.
+        for i in range(8):
+            self._write_match(f"match-{i}", [
+                match_start(),
+                create_event(ME),
+                damage_event(ME, RIVAL, 20),
+                kill_event(ME, RIVAL, "WeapAK47_C", 15, 25),
+            ])
+        match_ids = [f"match-{i}" for i in range(8)]
+
+        with patch("utils.telemetry_cache.json.load", wraps=json.load) as mock_load:
+            compute_archetype_tag(ME, telemetry_dir=self.tmpdir.name, match_ids=match_ids)
+
+        self.assertEqual(mock_load.call_count, 8)
 
 
 if __name__ == '__main__':

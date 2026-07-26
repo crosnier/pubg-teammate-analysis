@@ -2,6 +2,7 @@
 # utils/archetype_tag.py
 # ==============================
 from utils.range_signal import compute_range_signal
+from utils.telemetry_cache import load_telemetry_events
 from utils.tempo_signal import compute_tempo_signal
 from utils.weapon_signature import compute_weapon_signature
 
@@ -33,13 +34,23 @@ def compute_archetype_tag(account_id, match_ids, telemetry_dir=TELEMETRY_DIR, te
     solo, enough to flip the bucket for some players, while Tempo showed
     no mode sensitivity and stays on the full match_ids scope. Defaults to
     match_ids when not given, so existing callers are unaffected.
+
+    Each cached match's telemetry is parsed once here (see
+    utils/telemetry_cache.py) and shared across all three signal
+    functions below, instead of each one independently re-opening and
+    re-parsing the same files from disk (issue #30).
     """
     match_ids = set(match_ids)
     range_weapon_match_ids = set(team_mode_match_ids) if team_mode_match_ids is not None else match_ids
+    events_by_match = load_telemetry_events(match_ids | range_weapon_match_ids, telemetry_dir)
 
-    tempo = compute_tempo_signal(account_id, match_ids=match_ids, telemetry_dir=telemetry_dir)
-    range_signal = compute_range_signal(account_id, match_ids=range_weapon_match_ids, telemetry_dir=telemetry_dir)
-    weapon = compute_weapon_signature(account_id, match_ids=range_weapon_match_ids, telemetry_dir=telemetry_dir)
+    tempo = compute_tempo_signal(account_id, match_ids=match_ids, telemetry_dir=telemetry_dir, events_by_match=events_by_match)
+    range_signal = compute_range_signal(
+        account_id, match_ids=range_weapon_match_ids, telemetry_dir=telemetry_dir, events_by_match=events_by_match
+    )
+    weapon = compute_weapon_signature(
+        account_id, match_ids=range_weapon_match_ids, telemetry_dir=telemetry_dir, events_by_match=events_by_match
+    )
 
     temperament = TEMPO_TO_TEMPERAMENT.get(tempo["tempo_tag"])
     range_bucket = range_signal["range_bucket"]

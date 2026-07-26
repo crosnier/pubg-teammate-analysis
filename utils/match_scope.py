@@ -13,12 +13,17 @@ TELEMETRY_DIR = "match-telemetry"
 # signal than a match from months ago, but too few matches makes any
 # signal unreliable, hence the widening window.
 #
-# Defaults set to 50 for now pending further performance investigation
-# (real-cache benchmarking showed ~0.78s/match per signal, single-
-# threaded) - the intended production default is 250, per the widening
-# spec: 30-day window, +30 days at a time up to 90 days, until 250
-# matches are found or the window maxes out. Revisit once per-match
-# parse cost at the intended 250-match scale is benchmarked.
+# Defaults kept at 50 deliberately, not a placeholder (see issue #30):
+# tempo/range/weapon used to each independently re-parse the same match
+# files, fixed by sharing one parse pass per match across all three (see
+# utils/telemetry_cache.py) - a real ~2.2x speedup, but real cached
+# telemetry files run large enough (median ~36MB) that the per-match
+# JSON-parse cost alone is still the dominant factor. At 250 matches
+# that's ~110s+ for Archetype Tag alone, before combat_stats.py/
+# headline_number.py/drop_zone.py/movement_flow.py each separately
+# re-parse the same matches again (that redundancy is real but out of
+# #30's scope, which named only tempo/range/weapon). Raise only with
+# that wait time in mind - env-configurable, see .env.example.
 MAX_MATCHES = int(os.getenv("ARCHETYPE_MAX_MATCHES", 50))
 MIN_MATCHES_TARGET = int(os.getenv("ARCHETYPE_MIN_MATCHES_TARGET", 50))
 INITIAL_WINDOW_DAYS = int(os.getenv("ARCHETYPE_INITIAL_WINDOW_DAYS", 30))

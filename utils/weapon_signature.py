@@ -1,10 +1,7 @@
 # ==============================
 # utils/weapon_signature.py
 # ==============================
-import glob
-import json
-import os
-
+from utils.telemetry_cache import select_telemetry_events
 from utils.weapon_classes import classify_weapon
 
 TELEMETRY_DIR = "match-telemetry"
@@ -18,16 +15,7 @@ WILDCARD_GAP_THRESHOLD = 0.10
 MIN_KILLS_FOR_SIGNAL = 8
 
 
-def _load_telemetry_files(match_ids=None, telemetry_dir=TELEMETRY_DIR):
-    for path in glob.glob(os.path.join(telemetry_dir, "*-telemetry.json")):
-        match_id = os.path.basename(path).replace("-telemetry.json", "")
-        if match_ids is not None and match_id not in match_ids:
-            continue
-        with open(path, "r") as f:
-            yield json.load(f)
-
-
-def compute_weapon_signature(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR):
+def compute_weapon_signature(account_id, match_ids=None, telemetry_dir=TELEMETRY_DIR, events_by_match=None):
     """Weapon Signature half of the Archetype Tag: preferred gun class.
 
     Only kills with a real player victim and a classifiable gun causer
@@ -40,11 +28,15 @@ def compute_weapon_signature(account_id, match_ids=None, telemetry_dir=TELEMETRY
     class holds under WILDCARD_SHARE_THRESHOLD of kills, or the top two
     classes are within WILDCARD_GAP_THRESHOLD of each other - forcing a
     narrative onto a genuinely mixed loadout would be dishonest.
+
+    events_by_match, if given (see utils/telemetry_cache.py), reuses
+    telemetry already parsed by a caller sharing it across multiple
+    signals (see archetype_tag.py) instead of re-reading from disk.
     """
     class_counts = {}
     total_classified = 0
 
-    for events in _load_telemetry_files(match_ids, telemetry_dir):
+    for events in select_telemetry_events(match_ids, telemetry_dir, events_by_match):
         for event in events:
             if event.get("_T") != "LogPlayerKillV2" or event.get("isSuicide"):
                 continue
